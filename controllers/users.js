@@ -7,7 +7,7 @@ var escapeSQL = APP.escapeSQL();
 var request = APP.request();
 
 router.post('/signup', parser, function(req, res) {
-    if (req.body.id || req.body.coin || !req.body.email || !req.body.username || !req.body.facebook_id) {
+    if (req.body.id || req.body.coin || !req.body.facebook_id) {
         return res.sendStatus(300);
     }
     delete req.body.created_at;
