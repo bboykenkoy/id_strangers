@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Socket.IO</title>
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font: 13px Helvetica, Arial;
+    }
+
+    form {
+        background: #000;
+        padding: 3px;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+    }
+
+    form input {
+        border: 0;
+        padding: 10px;
+        width: 90%;
+        margin-right: .5%;
+    }
+
+    form button {
+        width: 9%;
+        background: rgb(130, 224, 255);
+        border: none;
+        padding: 10px;
+    }
+
+    #messages {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    #messages li {
+        padding: 5px 10px;
+    }
+
+    #messages li:nth-child(odd) {
+        background: #eee;
+    }
+
+    #messages {
+        margin-bottom: 40px
+    }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script type="text/javascript">
+    var socket = io("http://127.0.0.1:8080");
+    setTimeout(function() {
+        socket.emit('online', { id: 1, access_token: "123" });
+    }, 1000);
+    socket.on('error', function(error) {
+        console.log(error);
+    });
+    </script>
+</head>
+
+<body>
+    <h1>SMART CONNECT SOFTWARE</h1>
+    <!-- <label for="id">Sender ID</label><br>
+    <input type="number" name="id" id="id"><br>
+    <label for="conversation">Conversation ID</label><br>
+    <input type="number" name="conversation" id="conversation"><br>
+    <label for="chatMessage">Content</label><br>
+    <input type="text" name="chatMessage" id="chatMessage"><br><br>
+    <button id="sendMessage">SEND</button> -->
+</body>
+<script type="text/javascript">
+// $("#sendMessage").click(function() {
+// 	var object = {
+//         content: $('#chatMessage').val(),
+//         type: 'text', 
+//         sender_id: $('#id').val(), 
+//         conversations_id: $('#conversation').val()
+//     };
+//     socket.emit('new_message', object);
+//     socket.emit('searchings', {id: 1});
+// });
+// socket.on('my_message', function(content) {
+//     console.log(content);
+// });
+// socket.on('searchings', function(content) {
+//     console.log(content);
+// });
+</script>
+
+</html>
+
+
+
+
