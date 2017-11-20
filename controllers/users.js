@@ -110,37 +110,44 @@ router.post('/signup', parser, function(req, res) {
 router.post('/signin', parser, function(req, res) {
     var facebook_token = req.body.facebook_token;
     var facebook_id = req.body.facebook_id;
-    var url = "https://graph.facebook.com/me?access_token=" + facebook_token;
-    request(url, function(error, response, body) {
-        if (response && response.statusCode == 200 && APP.isJsonString(body)) {
-            var fb = JSON.parse(body);
-            if (facebook_id == fb.id) {
-                APP.getObjectWithSQL("SELECT * FROM `users` WHERE `facebook_id`='" + facebook_id + "'", function(user) {
-                    if (user) {
-                        APP.getObjectWithSQL("SELECT * FROM `informations` WHERE `users_id`=" + user[0].id, function(info) {
-                            APP.createAccessToken(user[0].id, facebook_token, 604800, function(access_token) {
-                                if (info) {
-                                    delete info[0].users_id;
-                                    user[0].access_token = access_token;
-                                    var full = Object.assign(user[0], info[0]);
-                                    return res.send(echo(200, full));
-                                } else {
-                                    user[0].access_token = access_token;
-                                    return res.send(echo(user[0], full));
-                                }
-                            });
+
+    var sqlUser = "SELECT * FROM `users` WHERE `facebook_id`='" + facebook_id + "'";
+    APP.getObjectWithSQL(sqlUser, function(u) {
+        if (u) {
+            var url = "https://graph.facebook.com/me?access_token=" + facebook_token;
+            request(url, function(error, response, body) {
+                if (response && response.statusCode == 200 && APP.isJsonString(body)) {
+                    var fb = JSON.parse(body);
+                    if (facebook_id == fb.id) {
+                        APP.getObjectWithSQL("SELECT * FROM `users` WHERE `facebook_id`='" + facebook_id + "'", function(user) {
+                            if (user) {
+                                APP.getObjectWithSQL("SELECT * FROM `informations` WHERE `users_id`=" + user[0].id, function(info) {
+                                    APP.createAccessToken(user[0].id, facebook_token, 604800, function(access_token) {
+                                        if (info) {
+                                            delete info[0].users_id;
+                                            user[0].access_token = access_token;
+                                            var full = Object.assign(user[0], info[0]);
+                                            return res.send(echo(200, full));
+                                        } else {
+                                            user[0].access_token = access_token;
+                                            return res.send(echo(user[0], full));
+                                        }
+                                    });
+                                });
+                            } else {
+                                return res.send(echo(404, "This user not exists."));
+                            }
                         });
                     } else {
-                        return res.send(echo(400, "This user not exists."));
+                        return res.send(echo(400, "Authenticate failed."));
                     }
-                });
-            } else {
-                return res.send(echo(400, "Authenticate failed."));
-            }
+                } else {
+                    return res.send(echo(400, "Authenticate failed."));
+                }
+            });
         } else {
-            return res.send(echo(400, "Authenticate failed."));
+            return res.send(echo(404, "This user not exists."));
         }
-
     });
 });
 
@@ -152,7 +159,7 @@ router.post('/update', parser, function(req, res) {
     }
     APP.authenticateWithToken(id, access_token, function(auth) {
         if (auth) {
-        	delete req.body.access_token;
+            delete req.body.access_token;
             // Nếu có thông tin ở bảng khác
             var informations = {};
             if (req.body.carrier || req.body.city || req.body.country || req.body.country_code ||
@@ -217,13 +224,13 @@ router.post('/update', parser, function(req, res) {
                                 var sql2 = escapeSQL.format("UPDATE `informations` SET ? WHERE `users_id` = ?", [informations, id]);
                                 APP.updateWithSQL(sql2, function(status2) {
                                     if (status2) {
-                                    	return res.send(echo(200, "Update successfully."));
+                                        return res.send(echo(200, "Update successfully."));
                                     } else {
                                         return res.send(echo(404, "Update failed."));
                                     }
                                 });
                             } else {
-                            	return res.send(echo(200, "Update successfully."));
+                                return res.send(echo(200, "Update successfully."));
                             }
                         } else {
                             return res.send(echo(404, "Update failed."));
