@@ -34,6 +34,7 @@ server.timeout = 60000;
 
 
 io.on('connection', function(socket) {
+    console.log(socket.id)
     // --------------------------
     // VERIFY WHEN CONNECT SOCKET
     // --------------------------
