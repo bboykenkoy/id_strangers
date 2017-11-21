@@ -34,38 +34,38 @@ server.timeout = 60000;
 
 
 io.on('connection', function(socket) {
+    console.log(socket.id)
     // --------------------------
     // VERIFY WHEN CONNECT SOCKET
     // --------------------------
-    // var verify = false;
-    // setTimeout(function() {
-    //     if (verify == false) {
-    //         if (io.sockets.connected[socket.id]) {
-    //             io.sockets.connected[socket.id].disconnect();
-    //         }
-    //     }
-    // }, 5000);
+    var verify = false;
+    setTimeout(function() {
+        if (verify == false) {
+            if (io.sockets.connected[socket.id]) {
+                io.sockets.connected[socket.id].disconnect();
+            }
+        }
+    }, 5000);
     // --------------------------
     // STATUS WHEN CONNECT SOCKET
     // --------------------------
     socket.on('online', function(user) {
-        console.log(JSON.stringify(user));
-        // if (typeof user == 'object' && user.access_token && user.id) {
-            // verify = true;
-            // user.socket_id = socket.id;
-            // users.push(user);
-            // users = _.uniqBy(users, 'id');
-            // users = _.uniqBy(users, 'socket_id');
-            // // UPDATE STATUS ONINE
-            // APP.updateWithSQL("UPDATE `users` SET `status`='online' WHERE `id`=" + user.id, function(status) {
-            //     client.query("UPDATE `informations` SET `socket_id`='" + user.socket_id + "' WHERE `users_id`=" + user.id);
-            //     console.log("USER ONLINE ID: " + user.id + " -- " + socket.id);
-            // });
-        // } else {
-        //     if (io.sockets.connected[socket.id]) {
-        //         io.sockets.connected[socket.id].disconnect();
-        //     }
-        // }
+        if (typeof user == 'object' && user.access_token && user.id) {
+            verify = true;
+            user.socket_id = socket.id;
+            users.push(user);
+            users = _.uniqBy(users, 'id');
+            users = _.uniqBy(users, 'socket_id');
+            // UPDATE STATUS ONINE
+            APP.updateWithSQL("UPDATE `users` SET `status`='online' WHERE `id`=" + user.id, function(status) {
+                client.query("UPDATE `informations` SET `socket_id`='" + user.socket_id + "' WHERE `users_id`=" + user.id);
+                console.log("USER ONLINE ID: " + user.id + " -- " + socket.id);
+            });
+        } else {
+            if (io.sockets.connected[socket.id]) {
+                io.sockets.connected[socket.id].disconnect();
+            }
+        }
     });
     // --------------------------
     // SOCKET CHAT SEARCHING
