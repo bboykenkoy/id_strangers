@@ -91,6 +91,7 @@ router.post('/signup', parser, function(req, res) {
                             var sql2 = escapeSQL.format("INSERT INTO `informations` SET ?", informations);
                             APP.insertWithSQL(sql2, function(status2) {
                                 if (status2) {
+                                    
                                     return res.send(echo(200, "Registration successfully."));
                                 } else {
                                     return res.send(echo(404, "Registration failed."));
