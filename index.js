@@ -168,7 +168,7 @@ io.on('connection', function(socket) {
                     if (receiver) {
                         socket.broadcast.to(receiver[0].socket_id).emit('new_message', message);
                     }
-                }); =
+                });
             });
             console.log(message);
         }
