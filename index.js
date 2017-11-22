@@ -165,12 +165,24 @@ io.on('connection', function(socket) {
     socket.on('new_message', function(message) {
         if (typeof message == 'object' && message.sender_id && message.content && message.conversations_id) {
             var currentTime = new Date().getTime()
-            var obInsert = {
-                content: message.content,
-                time: currentTime,
-                type: message.type,
-                conversations_id: message.conversations_id,
-                users_id: message.sender_id
+            var obInsert;
+            if (message.data) {
+                obInsert = {
+                    content: message.content,
+                    time: currentTime,
+                    type: message.type,
+                    conversations_id: message.conversations_id,
+                    users_id: message.sender_id,
+                    data: message.data
+                }
+            } else {
+                obInsert = {
+                    content: message.content,
+                    time: currentTime,
+                    type: message.type,
+                    conversations_id: message.conversations_id,
+                    users_id: message.sender_id
+                }
             }
             var sqlInsert = escapeSQL.format("INSERT INTO `messages` SET ?", obInsert);
             APP.insertWithSQL(sqlInsert, function(m) {
