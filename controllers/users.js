@@ -262,9 +262,9 @@ router.get('/:id/type=conversations', parser, function(req, res) {
                     var conversations = [];
                     async.forEachOf(data, function(element, i, callback){
                         var sql = "SELECT * FROM `users` WHERE `id` IN (SELECT `users_id` FROM `members` WHERE `conversations_id`='" + element.id + "')";
+                        console.log(sql);
                         APP.getObjectWithSQL(sql, function(member){
                             data[i].members = member;
-                            console.log(member);
                             conversations.push(data[i]);
                             if (i == data.length-1) {
                                 return res.send(echo(200, conversations));
