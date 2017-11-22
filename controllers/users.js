@@ -5,6 +5,7 @@ var APP = new manager();
 var parser = APP.parser();
 var escapeSQL = APP.escapeSQL();
 var request = APP.request();
+var async = APP.async()
 
 router.post('/signup', parser, function(req, res) {
     if (req.body.id || req.body.coin || !req.body.facebook_id) {
@@ -258,7 +259,15 @@ router.get('/:id/type=conversations', parser, function(req, res) {
             console.log(userSQL);
             APP.getObjectWithSQL(userSQL, function(data){
                 if (data) {
-                    return res.send(echo(200, data));
+                    async.forEachOf(data, function(element, i, callback){
+                        var sql = "SELECT * FROM `users` WHERE `id` IN (SELECT `users_id` FROM `members` WHERE `conversations_id`='" + element.id + "')";
+                        APP.getObjectWithSQL(sql, function(member){
+                            data[i].members = member
+                            if (i == data.length-1) {
+                                return res.send(echo(200, data));
+                            }
+                        });
+                    });
                 } else {
                     return res.send(echo(404, "No have any conversation."));
                 }
