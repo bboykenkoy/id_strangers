@@ -255,19 +255,17 @@ router.get('/:id/type=conversations', parser, function(req, res) {
     var per_page = req.body.per_page || req.query.per_page || req.params.per_page;
     APP.authenticateWithToken(id, access_token, function(auth) {
         if (auth) {
-            var userSQL = "SELECT * FROM conversations INNER JOIN members ON members.conversations_id = conversations.id AND members.users_id = " + id + " ORDER BY `last_action_time` DESC LIMIT " + parseInt(per_page, 10) + " OFFSET " + parseInt(page, 10) * parseInt(per_page, 10) + "";
+            var userSQL = "SELECT * FROM conversations INNER JOIN (SELECT `users_id`,`conversations_id` FROM members) as members ON members.conversations_id = conversations.id AND members.users_id = " + id + " ORDER BY `last_action_time` DESC LIMIT " + parseInt(per_page, 10) + " OFFSET " + parseInt(page, 10) * parseInt(per_page, 10) + "";
             console.log(userSQL);
             APP.getObjectWithSQL(userSQL, function(data){
                 if (data) {
-                    var conversations = [];
                     async.forEachOf(data, function(element, i, callback){
                         var sql = "SELECT * FROM `users` WHERE `id` IN (SELECT `users_id` FROM `members` WHERE `conversations_id`=" + element.id + ")";
                         console.log(sql);
                         APP.getObjectWithSQL(sql, function(member){
                             data[i].members = member;
-                            conversations.push(data[i]);
                             if (i == data.length-1) {
-                                return res.send(echo(200, conversations));
+                                return res.send(echo(200, data));
                             }
                         });
                     });
