@@ -162,6 +162,10 @@ module.exports = class app {
             callback(false);
         }
     }
+    informationUser(){
+        return "`id`,`nickname`,`avatar`,`cover`,`gender`,`birthday`,`created_at`,`last_active`,`status`,`language`"
+    }
+
     isJsonString(str) {
         try {
             JSON.parse(str);
