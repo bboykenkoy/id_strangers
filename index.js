@@ -170,6 +170,7 @@ io.on('connection', function(socket) {
                     }
                 });
             });
+            socket.emit('new_message', message);
             console.log(message);
         }
     });
