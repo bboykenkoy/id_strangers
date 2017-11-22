@@ -253,20 +253,21 @@ router.get('/:id/type=conversations', parser, function(req, res) {
     var id = req.body.id || req.query.id || req.params.id;
     var page = req.body.page || req.query.page || req.params.page;
     var per_page = req.body.per_page || req.query.per_page || req.params.per_page;
-    console.log(access_token);
-    console.log(id);
     APP.authenticateWithToken(id, access_token, function(auth) {
         if (auth) {
             var userSQL = "SELECT * FROM conversations INNER JOIN members ON members.conversations_id = conversations.id AND members.users_id = '" + id + "' ORDER BY `last_action_time` DESC LIMIT " + parseInt(per_page, 10) + " OFFSET " + parseInt(page, 10) * parseInt(per_page, 10) + "";
             console.log(userSQL);
             APP.getObjectWithSQL(userSQL, function(data){
                 if (data) {
+                    var conversations = [];
                     async.forEachOf(data, function(element, i, callback){
                         var sql = "SELECT * FROM `users` WHERE `id` IN (SELECT `users_id` FROM `members` WHERE `conversations_id`='" + element.id + "')";
                         APP.getObjectWithSQL(sql, function(member){
-                            data[i].members = member
+                            data[i].members = member;
+                            console.log(member);
+                            conversations.push(data[i]);
                             if (i == data.length-1) {
-                                return res.send(echo(200, data));
+                                return res.send(echo(200, conversations));
                             }
                         });
                     });
