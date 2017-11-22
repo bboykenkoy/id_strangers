@@ -258,6 +258,7 @@ router.get('/:id/type=conversations', parser, function(req, res) {
     APP.authenticateWithToken(id, access_token, function(auth) {
         if (auth) {
             var userSQL = "SELECT * FROM conversations INNER JOIN members ON members.conversations_id = conversations.id AND members.users_id = '" + id + "' ORDER BY `last_action_time` DESC LIMIT " + parseInt(per_page, 10) + " OFFSET " + parseInt(page, 10) * parseInt(per_page, 10) + "";
+            console.log(userSQL);
             APP.getObjectWithSQL(userSQL, function(data){
                 if (data) {
                     return res.send(echo(200, data));
