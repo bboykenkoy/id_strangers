@@ -173,7 +173,8 @@ io.on('connection', function(socket) {
         async.forEachOf(users, function(element, i, callback) {
             if (element.socket_id == socket.id) {
                 // UPDATE STATUS OFFLINE
-                APP.updateWithSQL("UPDATE `users` SET `status`='offline' WHERE `id`=" + element.id, function(status) {
+                var currentTime = new Date().getTime();
+                APP.updateWithSQL("UPDATE `users` SET `status`='offline', `last_active`="+currentTime+" WHERE `id`=" + element.id, function(status) {
                     client.query("UPDATE `informations` SET `socket_id`='null' WHERE `users_id`=" + element.id);
                     console.log("USER OFFLINE ID: " + element.id);
                 });
