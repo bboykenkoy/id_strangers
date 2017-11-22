@@ -23,6 +23,7 @@ var APP = new manager();
 var _ = APP._();
 var client = APP.client();
 var async = APP.async();
+var escapeSQL = APP.escapeSQL();
 var users = [];
 
 // MỞ KẾT NỐI CHO SERVER
@@ -163,15 +164,27 @@ io.on('connection', function(socket) {
     // --------------------------
     socket.on('new_message', function(message) {
         if (typeof message == 'object' && message.sender_id && message.content && message.conversations_id) {
-            async.forEachOf(message.members, function(element, i, callback) {
-                APP.getObjectWithSQL("SELECT * FROM `informations` WHERE `users_id`=" + element.id, function(receiver) {
-                    if (receiver) {
-                        socket.broadcast.to(receiver[0].socket_id).emit('new_message', message);
-                    }
+            var currentTime = new Date().getTime()
+            var obInsert = {
+                content: message.content,
+                time: currentTime,
+                type: message.type,
+                conversations_id: message.conversations_id,
+                users_id: message.sender_id
+            }
+            var sqlInsert = escapeSQL.format("INSERT INTO `messages` SET ?", obInsert);
+            APP.insertWithSQL(sqlInsert, function(m) {
+                message.id = m.id;
+                async.forEachOf(message.members, function(element, i, callback) {
+                    APP.getObjectWithSQL("SELECT * FROM `informations` WHERE `users_id`=" + element.id, function(receiver) {
+                        if (receiver) {
+                            socket.broadcast.to(receiver[0].socket_id).emit('new_message', message);
+                        }
+                    });
                 });
+                socket.emit('new_message', message);
+                console.log(message);
             });
-            socket.emit('new_message', message);
-            console.log(message);
         }
     });
     // --------------------------
