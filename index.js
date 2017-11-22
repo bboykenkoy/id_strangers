@@ -82,28 +82,35 @@ io.on('connection', function(socket) {
                             // CREATE CONVERSATION
                             var created_at = new Date().getTime();
                             var conversation = {};
-                            APP.insertWithSQL("INSERT INTO `conversations` SET `name`='Stranger', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
-                                if (stt) {
-                                    conversation.conversations_id = stt.id;
-                                    conversation.name = "Stranger";
-                                    conversation.last_message = "Created";
-                                    conversation.is_new = 1;
-                                    conversation.created_at = created_at;
-                                    conversation.last_action_time = created_at;
-                                    conversation.created_by = user.id;
-                                    var members = [];
-                                    members.push(user.id);
-                                    members.push(data[0].users_id);
-                                    conversation.members = members;
-                                    async.forEachOf(members, function(ele, i, call) {
-                                        client.query("INSERT INTO `members` SET `users_id`=" + ele + ", `conversations_id`=" + stt.id);
-                                        client.query("DELETE FROM `searchings` WHERE `users_id`=" + ele);
-                                        if (i == members.length - 1) {
-                                            // SEND TO USER
-                                            socket.emit('searchings', conversation);
-                                        }
-                                    });
+                            var userSQL = "SELECT * FROM conversations INNER JOIN (SELECT `users_id`,`conversations_id` FROM members) as members ON members.conversations_id = conversations.id AND members.users_id = " + user.id;
+                            APP.getObjectWithSQL(userSQL, function(conversation_list) {
+                                var numberConversation = 0;
+                                if (conversation_list) {
+                                    numberConversation = conversation_list.length;
                                 }
+                                APP.insertWithSQL("INSERT INTO `conversations` SET `name`='Stranger', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
+                                    if (stt) {
+                                        conversation.conversations_id = stt.id;
+                                        conversation.name = "Stranger " + numberConversation;
+                                        conversation.last_message = "Created";
+                                        conversation.is_new = 1;
+                                        conversation.created_at = created_at;
+                                        conversation.last_action_time = created_at;
+                                        conversation.created_by = user.id;
+                                        var members = [];
+                                        members.push(user.id);
+                                        members.push(data[0].users_id);
+                                        conversation.members = members;
+                                        async.forEachOf(members, function(ele, i, call) {
+                                            client.query("INSERT INTO `members` SET `users_id`=" + ele + ", `conversations_id`=" + stt.id);
+                                            client.query("DELETE FROM `searchings` WHERE `users_id`=" + ele);
+                                            if (i == members.length - 1) {
+                                                // SEND TO USER
+                                                socket.emit('searchings', conversation);
+                                            }
+                                        });
+                                    }
+                                });
                             });
                         } else {
                             // SEND TO USER
@@ -174,7 +181,7 @@ io.on('connection', function(socket) {
             if (element.socket_id == socket.id) {
                 // UPDATE STATUS OFFLINE
                 var currentTime = new Date().getTime();
-                APP.updateWithSQL("UPDATE `users` SET `status`='offline', `last_active`="+currentTime+" WHERE `id`=" + element.id, function(status) {
+                APP.updateWithSQL("UPDATE `users` SET `status`='offline', `last_active`=" + currentTime + " WHERE `id`=" + element.id, function(status) {
                     client.query("UPDATE `informations` SET `socket_id`='null' WHERE `users_id`=" + element.id);
                     console.log("USER OFFLINE ID: " + element.id);
                 });
