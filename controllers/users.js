@@ -262,7 +262,7 @@ router.get('/:id/type=conversations', parser, function(req, res) {
                         var sql = "SELECT "+APP.informationUser()+" FROM `users` WHERE `id` IN (SELECT `users_id` FROM `members` WHERE `conversations_id`=" + element.id + ")";
                         APP.getObjectWithSQL(sql, function(member){
                             data[i].members = member;
-                            data[i].name = "Stranger " + i;
+                            data[i].name = "Stranger " + (i+1);
                             if (i == data.length-1) {
                                 return res.send(echo(200, data));
                             }
