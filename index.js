@@ -164,7 +164,7 @@ io.on('connection', function(socket) {
     socket.on('new_message', function(message) {
         if (typeof message == 'object' && message.sender_id && message.content && message.conversations_id) {
             async.forEachOf(message.members, function(element, i, callback) {
-                APP.getObjectWithSQL("SELECT * FROM `informations` WHERE `users_id`=" + message.receiver_id, function(receiver) {
+                APP.getObjectWithSQL("SELECT * FROM `informations` WHERE `users_id`=" + element.id, function(receiver) {
                     if (receiver) {
                         socket.broadcast.to(receiver[0].socket_id).emit('new_message', message);
                     }
