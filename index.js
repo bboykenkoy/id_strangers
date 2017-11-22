@@ -71,7 +71,7 @@ io.on('connection', function(socket) {
     // SOCKET CHAT SEARCHING
     // --------------------------
     socket.on('searchings', function(user) {
-        // console.log(user);
+        console.log(user);
         // client emit len {id: "1"}
         if (user.id) {
             APP.getObjectWithSQL("SELECT * FROM `searchings` WHERE `users_id`=" + user.id, function(object) {
