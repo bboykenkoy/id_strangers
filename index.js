@@ -175,6 +175,7 @@ io.on('connection', function(socket) {
             }
             var sqlInsert = escapeSQL.format("INSERT INTO `messages` SET ?", obInsert);
             APP.insertWithSQL(sqlInsert, function(m) {
+                message.temp_id = message.id;
                 message.id = m.id;
                 message.time = currentTime;
                 async.forEachOf(message.members, function(element, i, callback) {
