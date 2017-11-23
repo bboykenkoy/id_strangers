@@ -25,7 +25,13 @@ router.get('/:conversations_id/type=messages', parser, function(req, res) {
             var userSQL = "SELECT * FROM `messages` WHERE `conversations_id`=" + conversations_id + " ORDER BY `time` DESC LIMIT " + parseInt(per_page, 10) + " OFFSET " + parseInt(page, 10) * parseInt(per_page, 10) + "";
             APP.getObjectWithSQL(userSQL, function(data) {
                 if (data) {
-                    return res.send(echo(200, data));
+                    async.forEachOf(data, function(element, i, callback) {
+                        data[i].sender_id = data[i].users_id;
+                        delete data[i].users_id;
+                        if (i == data.length - 1) {
+                            return res.send(echo(200, data));
+                        }
+                    });
                 } else {
                     return res.send(echo(404, "No have any messages."));
                 }
