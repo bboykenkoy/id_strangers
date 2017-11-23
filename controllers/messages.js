@@ -5,6 +5,7 @@ var APP = new manager();
 var parser = APP.parser();
 var escapeSQL = APP.escapeSQL();
 var request = APP.request();
+var async = APP.async();
 
 
 

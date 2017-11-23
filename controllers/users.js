@@ -5,7 +5,7 @@ var APP = new manager();
 var parser = APP.parser();
 var escapeSQL = APP.escapeSQL();
 var request = APP.request();
-var async = APP.async()
+var async = APP.async();
 
 router.post('/signup', parser, function(req, res) {
     if (req.body.id || req.body.coin || !req.body.facebook_id) {
