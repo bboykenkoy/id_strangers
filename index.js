@@ -186,7 +186,9 @@ io.on('connection', function(socket) {
                         }
                     });
                 });
-                socket.emit('new_message', message);
+                var messageToMe = message;
+                messageToMe.status = 1;
+                socket.emit('new_message', messageToMe);
                 console.log(message);
             });
         }
