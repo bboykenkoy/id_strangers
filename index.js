@@ -179,7 +179,11 @@ io.on('connection', function(socket) {
                 message.time = currentTime;
                 async.forEachOf(message.members, function(element, i, callback) {
                     // INSERT MESSAGE STATUS
-                    client.query("INSERT INTO `message_status` SET `status`=0, `messages_id`="+m.id+", `users_id`="+element.id);
+                    if (element.id == message.sender_id) {
+                        client.query("INSERT INTO `message_status` SET `status`=1, `messages_id`="+m.id+", `users_id`="+element.id);
+                    } else {
+                        client.query("INSERT INTO `message_status` SET `status`=0, `messages_id`="+m.id+", `users_id`="+element.id);
+                    }
                     APP.getObjectWithSQL("SELECT * FROM `informations` WHERE `users_id`=" + element.id, function(receiver) {
                         if (receiver) {
                             socket.broadcast.to(receiver[0].socket_id).emit('new_message', message);
