@@ -22,7 +22,7 @@ router.get('/:conversations_id/type=messages', parser, function(req, res) {
     var per_page = req.body.per_page || req.query.per_page || req.params.per_page;
     APP.authenticateWithToken(id, access_token, function(auth) {
         if (auth) {
-            var userSQL = "SELECT * FROM `messages` WHERE `conversations_id`=" + conversations_id + " ORDER BY `time` ASC LIMIT " + parseInt(per_page, 10) + " OFFSET " + parseInt(page, 10) * parseInt(per_page, 10) + "";
+            var userSQL = "SELECT * FROM `messages` WHERE `conversations_id`=" + conversations_id + " ORDER BY `time` DESC LIMIT " + parseInt(per_page, 10) + " OFFSET " + parseInt(page, 10) * parseInt(per_page, 10) + "";
             APP.getObjectWithSQL(userSQL, function(data) {
                 if (data) {
                     return res.send(echo(200, data));
