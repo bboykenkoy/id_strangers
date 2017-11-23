@@ -115,6 +115,7 @@ io.on('connection', function(socket) {
                             });
                         } else {
                             // SEND TO USER
+                            client.query("DELETE FROM `searchings` WHERE `users_id`=" + user.id);
                             socket.emit('searchings', 0);
                         }
                     });
@@ -177,6 +178,8 @@ io.on('connection', function(socket) {
                 message.id = m.id;
                 message.time = currentTime;
                 async.forEachOf(message.members, function(element, i, callback) {
+                    // INSERT MESSAGE STATUS
+                    client.query("INSERT INTO `message_status` SET `status`=0, `messages_id`="+m.id+", `users_id`="+element.id);
                     APP.getObjectWithSQL("SELECT * FROM `informations` WHERE `users_id`=" + element.id, function(receiver) {
                         if (receiver) {
                             socket.broadcast.to(receiver[0].socket_id).emit('new_message', message);
