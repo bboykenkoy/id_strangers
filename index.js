@@ -87,7 +87,7 @@ io.on('connection', function(socket) {
                             APP.getObjectWithSQL(userSQL, function(conversation_list) {
                                 var name = "";
                                 if (conversation_list) {
-                                    name = "Stranger 0" + conversation_list.length;
+                                    name = "Stranger " + conversation_list.length;
                                 } else {
                                     name = "Stranger 1";
                                 }
@@ -135,7 +135,7 @@ io.on('connection', function(socket) {
                             APP.getObjectWithSQL(userSQL, function(conversation_list) {
                                 var name = "";
                                 if (conversation_list) {
-                                    name = "Stranger 0" + conversation_list.length;
+                                    name = "Stranger " + conversation_list.length;
                                 } else {
                                     name = "Stranger 1";
                                 }
