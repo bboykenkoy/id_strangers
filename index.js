@@ -73,15 +73,15 @@ io.on('connection', function(socket) {
     // --------------------------
     socket.on('seen', function(chat) {
         if (typeof chat == 'object' && chat.conversations_id && chat.id) {
-            var sqlMess = "SELECT * FROM `message_status` WHERE `conversations_id`="+chat.conversations_id+" AND `users_id`="+chat.id;
-            APP.getObjectWithSQL(sqlMess, function(statusMessage){
+            var sqlMess = "SELECT * FROM `message_status` WHERE `conversations_id`=" + chat.conversations_id + " AND `users_id`=" + chat.id;
+            APP.getObjectWithSQL(sqlMess, function(statusMessage) {
                 if (statusMessage) {
-                    var sql = "UPDATE `message_status` SET `status`=3 WHERE `conversations_id`="+chat.conversations_id+" AND `users_id`="+chat.id+"";
+                    var sql = "UPDATE `message_status` SET `status`=3 WHERE `conversations_id`=" + chat.conversations_id + " AND `users_id`=" + chat.id + "";
                     client.query(sql);
-                    var sqlSend = "SELECT * FROM `informations` WHERE `users_id` IN (SELECT `users_id` FROM `message_status` WHERE `conversations_id`="+chat.conversations_id+") AND `users_id`!="+chat.id;
+                    var sqlSend = "SELECT * FROM `informations` WHERE `users_id` IN (SELECT `users_id` FROM `message_status` WHERE `conversations_id`=" + chat.conversations_id + ") AND `users_id`!=" + chat.id;
                     APP.getObjectWithSQL(sqlSend, function(receiver) {
                         if (receiver) {
-                            async.forEachOf(receiver, function(e,i,c){
+                            async.forEachOf(receiver, function(e, i, c) {
                                 socket.broadcast.to(receiver[i].socket_id).emit('seen', chat);
                             });
                         }
@@ -113,7 +113,7 @@ io.on('connection', function(socket) {
                                 } else {
                                     name = "Stranger 1";
                                 }
-                                APP.insertWithSQL("INSERT INTO `conversations` SET `name`='"+name+"', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
+                                APP.insertWithSQL("INSERT INTO `conversations` SET `name`='" + name + "', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
                                     if (stt) {
                                         conversation.conversations_id = stt.id;
                                         conversation.last_message = "Created";
@@ -162,7 +162,7 @@ io.on('connection', function(socket) {
                                 } else {
                                     name = "Stranger 1";
                                 }
-                                APP.insertWithSQL("INSERT INTO `conversations` SET `name`='"+name+"', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
+                                APP.insertWithSQL("INSERT INTO `conversations` SET `name`='" + name + "', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
                                     if (stt) {
                                         conversation.conversations_id = stt.id;
                                         conversation.last_message = "Created";
@@ -217,22 +217,22 @@ io.on('connection', function(socket) {
                 message.id = m.id;
                 message.time = currentTime;
                 async.forEachOf(message.members, function(element, i, callback) {
-                    // INSERT MESSAGE STATUS
-                    if (element.id != message.sender_id) {
-                        client.query("INSERT INTO `message_status` SET `status`=1, `messages_id`=" + m.id + ", `conversations_id`=" + message.conversations_id + ", `users_id`=" + element.id);
-                    } else {
-                        client.query("INSERT INTO `message_status` SET `status`=3, `messages_id`=" + m.id + ", `conversations_id`=" + message.conversations_id + ", `users_id`=" + element.id);
-                    }
                     APP.getObjectWithSQL("SELECT * FROM `informations` WHERE `users_id`=" + element.id, function(receiver) {
                         if (receiver) {
                             socket.broadcast.to(receiver[0].socket_id).emit('new_message', message);
+                            // INSERT MESSAGE STATUS
+                            if (element.id != message.sender_id) {
+                                client.query("INSERT INTO `message_status` SET `status`=1, `messages_id`=" + m.id + ", `conversations_id`=" + message.conversations_id + ", `users_id`=" + element.id);
+                            } else {
+                                client.query("INSERT INTO `message_status` SET `status`=3, `messages_id`=" + m.id + ", `conversations_id`=" + message.conversations_id + ", `users_id`=" + element.id);
+                            }
                         }
                     });
                 });
                 var messageToMe = message;
                 messageToMe.status = 1;
                 // UPDATE CONVERSATION
-                client.query("UPDATE `conversations` SET `last_message`='"+message.content+"', `last_action_time`="+currentTime+", `last_id_update`="+message.sender_id);
+                client.query("UPDATE `conversations` SET `last_message`='" + message.content + "', `last_action_time`=" + currentTime + ", `last_id_update`=" + message.sender_id);
                 socket.emit('new_message', messageToMe);
                 //console.log(message);
             });
