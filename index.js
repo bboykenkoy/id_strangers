@@ -67,6 +67,7 @@ io.on('connection', function(socket) {
                     if (conversation_list) {
                         async.forEachOf(conversation_list, function(ele, j, call){
                             var sqlReceived = "UPDATE `message_status` SET `status`=2 WHERE `status`=1 AND `users_id`!=" + user.id + " AND `conversations_id`="+ele.id;
+                            console.log(sqlReceived);
                             client.query(sqlReceived);
                         });
                     }
