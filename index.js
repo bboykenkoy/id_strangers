@@ -85,14 +85,14 @@ io.on('connection', function(socket) {
                             var conversation = {};
                             var userSQL = "SELECT * FROM conversations INNER JOIN (SELECT `users_id`,`conversations_id` FROM members) as members ON members.conversations_id = conversations.id AND members.users_id = " + user.id + " ORDER BY `last_action_time`";
                             APP.getObjectWithSQL(userSQL, function(conversation_list) {
-                                APP.insertWithSQL("INSERT INTO `conversations` SET `name`='Stranger', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
+                                if (conversation_list) {
+                                    conversation.name = "Stranger " + conversation_list.length;
+                                } else {
+                                    conversation.name = "Stranger 1";
+                                }
+                                APP.insertWithSQL("INSERT INTO `conversations` SET `name`='"+conversation.name+"', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
                                     if (stt) {
                                         conversation.conversations_id = stt.id;
-                                        if (conversation_list) {
-                                            conversation.name = "Stranger " + conversation_list.length;
-                                        } else {
-                                            conversation.name = "Stranger 1";
-                                        }
                                         conversation.last_message = "Created";
                                         conversation.is_new = 1;
                                         conversation.created_at = created_at;
