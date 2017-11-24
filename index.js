@@ -222,18 +222,27 @@ io.on('connection', function(socket) {
                             socket.broadcast.to(receiver[0].socket_id).emit('new_message', message);
                             // INSERT MESSAGE STATUS
                             if (element.id != message.sender_id) {
-                                client.query("INSERT INTO `message_status` SET `status`=1, `messages_id`=" + m.id + ", `conversations_id`=" + message.conversations_id + ", `users_id`=" + element.id);
+                                APP.getObjectWithSQL("SELECT * FROM `users` WHERE `status`='online' AND `id`="+element.id, function(check){
+                                    if (check) {
+                                        client.query("INSERT INTO `message_status` SET `status`=2, `messages_id`=" + m.id + ", `conversations_id`=" + message.conversations_id + ", `users_id`=" + element.id);
+                                        var messageToMe = message;
+                                        messageToMe.status = 2;
+                                        socket.emit('new_message', messageToMe);
+                                    } else {
+                                        client.query("INSERT INTO `message_status` SET `status`=1, `messages_id`=" + m.id + ", `conversations_id`=" + message.conversations_id + ", `users_id`=" + element.id);
+                                        var messageToMe = message;
+                                        messageToMe.status = 1;
+                                        socket.emit('new_message', messageToMe);
+                                    }
+                                });
                             } else {
                                 client.query("INSERT INTO `message_status` SET `status`=3, `messages_id`=" + m.id + ", `conversations_id`=" + message.conversations_id + ", `users_id`=" + element.id);
                             }
                         }
                     });
                 });
-                var messageToMe = message;
-                messageToMe.status = 1;
                 // UPDATE CONVERSATION
                 client.query("UPDATE `conversations` SET `last_message`='" + message.content + "', `last_action_time`=" + currentTime + ", `last_id_update`=" + message.sender_id);
-                socket.emit('new_message', messageToMe);
                 //console.log(message);
             });
         }
