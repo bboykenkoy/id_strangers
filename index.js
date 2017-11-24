@@ -79,7 +79,11 @@ io.on('connection', function(socket) {
                 if (statusMessage) {
                     var sql = "UPDATE `message_status` SET `status`=3 WHERE `conversations_id`="+chat.conversations_id+" AND `users_id`="+chat.id+"";
                     client.query(sql);
-                    console.log(sql);
+                    APP.getObjectWithSQL("SELECT * FROM `informations` WHERE `users_id` IN (SELECT `conversations_id` FROM `message_status` WHERE `conversations_id`="+chat.conversations_id+")", function(receiver) {
+                        if (receiver) {
+                            socket.broadcast.to(receiver[0].socket_id).emit('seen', chat);
+                        }
+                    });
                 }
             });
         }
