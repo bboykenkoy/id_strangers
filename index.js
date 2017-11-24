@@ -242,7 +242,7 @@ io.on('connection', function(socket) {
                     });
                 });
                 // UPDATE CONVERSATION
-                client.query("UPDATE `conversations` SET `last_message`='" + message.content + "', `last_action_time`=" + currentTime + ", `last_id_update`=" + message.sender_id + " WHERE `conversations_id`="+message.conversations_id);
+                client.query("UPDATE `conversations` SET `last_message`='" + message.content + "', `last_action_time`=" + currentTime + ", `last_id_update`=" + message.sender_id + " WHERE `id`="+message.conversations_id);
                 //console.log(message);
             });
         }
