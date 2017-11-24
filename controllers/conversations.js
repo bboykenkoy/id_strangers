@@ -36,7 +36,7 @@ router.get('/:conversations_id/type=messages', parser, function(req, res) {
                                     data[i].status = 0;
                                 }
                                 if (statusFriend) {
-                                    data[i].status_friend = status[0].status;
+                                    data[i].status_friend = statusFriend[0].status;
                                 } else {
                                     data[i].status_friend = 0;
                                 }
