@@ -29,9 +29,7 @@ router.get('/:conversations_id/type=messages', parser, function(req, res) {
                         var sttSQL = "SELECT `status` FROM `message_status` WHERE `messages_id`=" + element.id + " AND `users_id`=" + id + "";
                         APP.getObjectWithSQL(sttSQL, function(status) {
                             if (status) {
-                                data[i].status = status[0].status;
-                            } else {
-                                data[i].status = 0;
+                                data[i].status = status;
                             }
                             data[i].sender_id = data[i].users_id;
                             delete data[i].users_id;
