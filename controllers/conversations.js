@@ -28,16 +28,25 @@ router.get('/:conversations_id/type=messages', parser, function(req, res) {
                     async.forEachOf(data, function(element, i, callback) {
                         var sttSQL = "SELECT `status` FROM `message_status` WHERE `messages_id`=" + element.id + " AND `users_id`=" + id + "";
                         APP.getObjectWithSQL(sttSQL, function(status) {
-                            if (status) {
-                                data[i].status = status[0].status;
-                            } else {
-                                data[i].status = 0;
-                            }
-                            data[i].sender_id = data[i].users_id;
-                            delete data[i].users_id;
-                            if (i == data.length - 1) {
-                                return res.send(echo(200, data));
-                            }
+                            var sttSQLFriend = "SELECT `status` FROM `message_status` WHERE `messages_id`=" + element.id + " AND `users_id`!=" + id + "";
+                            APP.getObjectWithSQL(sttSQLFriend, function(statusFriend) {
+                                if (status) {
+                                    data[i].status = status[0].status;
+                                } else {
+                                    data[i].status = 0;
+                                }
+                                if (statusFriend) {
+                                    data[i].status_friend = status[0].status;
+                                } else {
+                                    data[i].status_friend = 0;
+                                }
+                                data[i].sender_id = data[i].users_id;
+                                delete data[i].users_id;
+                                if (i == data.length - 1) {
+                                    return res.send(echo(200, data));
+                                }
+                            });
+
                         });
                     });
                 } else {
