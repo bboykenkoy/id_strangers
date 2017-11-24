@@ -111,7 +111,7 @@ io.on('connection', function(socket) {
                                 if (conversation_list) {
                                     name = "Stranger " + conversation_list.length;
                                 } else {
-                                    name = "Stranger 1";
+                                    name = "Stranger 0";
                                 }
                                 APP.insertWithSQL("INSERT INTO `conversations` SET `name`='" + name + "', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
                                     if (stt) {
@@ -160,7 +160,7 @@ io.on('connection', function(socket) {
                                 if (conversation_list) {
                                     name = "Stranger " + conversation_list.length;
                                 } else {
-                                    name = "Stranger 1";
+                                    name = "Stranger 0";
                                 }
                                 APP.insertWithSQL("INSERT INTO `conversations` SET `name`='" + name + "', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
                                     if (stt) {
