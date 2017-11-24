@@ -85,12 +85,13 @@ io.on('connection', function(socket) {
                             var conversation = {};
                             var userSQL = "SELECT * FROM conversations INNER JOIN (SELECT `users_id`,`conversations_id` FROM members) as members ON members.conversations_id = conversations.id AND members.users_id = " + user.id + " ORDER BY `last_action_time`";
                             APP.getObjectWithSQL(userSQL, function(conversation_list) {
+                                var name = "";
                                 if (conversation_list) {
-                                    conversation.name = "Stranger " + conversation_list.length;
+                                    name = "Stranger 0" + conversation_list.length;
                                 } else {
-                                    conversation.name = "Stranger 1";
+                                    name = "Stranger 1";
                                 }
-                                APP.insertWithSQL("INSERT INTO `conversations` SET `name`='"+conversation.name+"', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
+                                APP.insertWithSQL("INSERT INTO `conversations` SET `name`='"+name+"', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
                                     if (stt) {
                                         conversation.conversations_id = stt.id;
                                         conversation.last_message = "Created";
@@ -98,6 +99,7 @@ io.on('connection', function(socket) {
                                         conversation.created_at = created_at;
                                         conversation.last_action_time = created_at;
                                         conversation.created_by = user.id;
+                                        conversation.name = name
                                         var members = [];
                                         members.push(user.id);
                                         members.push(data[0].users_id);
