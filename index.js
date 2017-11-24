@@ -74,13 +74,15 @@ io.on('connection', function(socket) {
     socket.on('seen', function(chat) {
         if (typeof chat == 'object' && chat.conversations_id && chat.id) {
             var sqlMess = "SELECT * FROM `message_status` WHERE `conversations_id`="+chat.conversations_id+" AND `users_id`="+chat.id;
-            console.log(sqlMess);
             APP.getObjectWithSQL(sqlMess, function(statusMessage){
                 if (statusMessage) {
                     var sql = "UPDATE `message_status` SET `status`=3 WHERE `conversations_id`="+chat.conversations_id+" AND `users_id`="+chat.id+"";
                     client.query(sql);
-                    APP.getObjectWithSQL("SELECT * FROM `informations` WHERE `users_id` IN (SELECT `conversations_id` FROM `message_status` WHERE `conversations_id`="+chat.conversations_id+")", function(receiver) {
+                    var sqlSend = "SELECT * FROM `informations` WHERE `users_id` IN (SELECT `conversations_id` FROM `message_status` WHERE `conversations_id`="+chat.conversations_id+")";
+                    console.log(sqlSend);
+                    APP.getObjectWithSQL(sqlSend, function(receiver) {
                         if (receiver) {
+                            console.log(receiver);
                             socket.broadcast.to(receiver[0].socket_id).emit('seen', chat);
                         }
                     });
@@ -228,7 +230,7 @@ io.on('connection', function(socket) {
                 var messageToMe = message;
                 messageToMe.status = 1;
                 socket.emit('new_message', messageToMe);
-                console.log(message);
+                //console.log(message);
             });
         }
     });
