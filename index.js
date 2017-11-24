@@ -61,6 +61,9 @@ io.on('connection', function(socket) {
             APP.updateWithSQL("UPDATE `users` SET `status`='online' WHERE `id`=" + user.id, function(status) {
                 client.query("UPDATE `informations` SET `socket_id`='" + user.socket_id + "' WHERE `users_id`=" + user.id);
                 console.log("USER ONLINE ID: " + user.id + " -- " + socket.id);
+                // SET RECEIVED MESSAGE
+                var sqlReceived = "UPDATE `message_status` SET `status`=2 WHERE `status`=1 AND `users_id`="+ user.id;
+                client.query(sqlReceived);
             });
         } else {
             if (io.sockets.connected[socket.id]) {
