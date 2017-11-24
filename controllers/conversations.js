@@ -26,7 +26,7 @@ router.get('/:conversations_id/type=messages', parser, function(req, res) {
             APP.getObjectWithSQL(userSQL, function(data) {
                 if (data) {
                     async.forEachOf(data, function(element, i, callback) {
-                        var sttSQL = "SELECT `status` FROM `message_status` WHERE `messages_id`=" + element.id;
+                        var sttSQL = "SELECT `status`,`users_id` FROM `message_status` WHERE `messages_id`=" + element.id;
                         APP.getObjectWithSQL(sttSQL, function(status) {
                             if (status) {
                                 data[i].status = status;
