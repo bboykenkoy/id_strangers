@@ -211,7 +211,7 @@ io.on('connection', function(socket) {
                 async.forEachOf(message.members, function(element, i, callback) {
                     // INSERT MESSAGE STATUS
                     if (element.id != message.sender_id) {
-                        client.query("INSERT INTO `message_status` SET `status`=1, `messages_id`=" + m.id + ", `users_id`=" + element.id);
+                        client.query("INSERT INTO `message_status` SET `status`=1, `messages_id`=" + m.id + ", `conversations_id`=" + message.conversations_id + ", `users_id`=" + element.id);
                     }
                     APP.getObjectWithSQL("SELECT * FROM `informations` WHERE `users_id`=" + element.id, function(receiver) {
                         if (receiver) {
