@@ -65,7 +65,7 @@ io.on('connection', function(socket) {
                 var userSQL = "SELECT * FROM conversations INNER JOIN (SELECT `users_id`,`conversations_id` FROM members) as members ON members.conversations_id = conversations.id AND members.users_id = " + user.id + " ORDER BY `last_action_time`";
                 APP.getObjectWithSQL(userSQL, function(conversation_list) {
                     if (conversation_list) {
-                        async.forEachOf(conversations_id, function(ele, j, call){
+                        async.forEachOf(conversation_list, function(ele, j, call){
                             var sqlReceived = "UPDATE `message_status` SET `status`=2 WHERE `status`=1 AND `users_id`!=" + user.id + " AND `conversations_id`="+ele.id;
                             client.query(sqlReceived);
                         });
