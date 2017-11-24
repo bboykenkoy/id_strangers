@@ -62,7 +62,7 @@ io.on('connection', function(socket) {
                 client.query("UPDATE `informations` SET `socket_id`='" + user.socket_id + "' WHERE `users_id`=" + user.id);
                 console.log("USER ONLINE ID: " + user.id + " -- " + socket.id);
                 // SET RECEIVED MESSAGE
-                var sqlReceived = "UPDATE `message_status` SET `status`=2 WHERE `status`=1 AND `users_id`="+ user.id;
+                var sqlReceived = "UPDATE `message_status` SET `status`=2 WHERE `status`=1 AND `users_id`=" + user.id;
                 client.query(sqlReceived);
             });
         } else {
@@ -88,6 +88,21 @@ io.on('connection', function(socket) {
                                 socket.broadcast.to(receiver[i].socket_id).emit('seen', chat);
                             });
                         }
+                    });
+                }
+            });
+        }
+    });
+    // --------------------------
+    // TYPING MESSAGE
+    // --------------------------
+    socket.on('typing', function(chat) {
+        if (typeof chat == 'object' && chat.conversations_id && chat.id) {
+            var sqlSend = "SELECT * FROM `informations` WHERE `users_id` IN (SELECT `users_id` FROM `message_status` WHERE `conversations_id`=" + chat.conversations_id + ") AND `users_id`!=" + chat.id;
+            APP.getObjectWithSQL(sqlSend, function(receiver) {
+                if (receiver) {
+                    async.forEachOf(receiver, function(e, i, c) {
+                        socket.broadcast.to(receiver[i].socket_id).emit('typing', chat);
                     });
                 }
             });
@@ -225,7 +240,7 @@ io.on('connection', function(socket) {
                             socket.broadcast.to(receiver[0].socket_id).emit('new_message', message);
                             // INSERT MESSAGE STATUS
                             if (element.id != message.sender_id) {
-                                APP.getObjectWithSQL("SELECT * FROM `users` WHERE `status`='online' AND `id`="+element.id, function(check){
+                                APP.getObjectWithSQL("SELECT * FROM `users` WHERE `status`='online' AND `id`=" + element.id, function(check) {
                                     if (check) {
                                         client.query("INSERT INTO `message_status` SET `status`=2, `messages_id`=" + m.id + ", `conversations_id`=" + message.conversations_id + ", `users_id`=" + element.id);
                                         var messageToMe = message;
@@ -245,7 +260,7 @@ io.on('connection', function(socket) {
                     });
                 });
                 // UPDATE CONVERSATION
-                client.query("UPDATE `conversations` SET `last_message`='" + message.content + "', `last_action_time`=" + currentTime + ", `last_id_update`=" + message.sender_id + " WHERE `id`="+message.conversations_id);
+                client.query("UPDATE `conversations` SET `last_message`='" + message.content + "', `last_action_time`=" + currentTime + ", `last_id_update`=" + message.sender_id + " WHERE `id`=" + message.conversations_id);
                 //console.log(message);
             });
         }
