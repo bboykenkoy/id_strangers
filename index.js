@@ -121,6 +121,7 @@ io.on('connection', function(socket) {
                                         conversation.created_at = created_at;
                                         conversation.last_action_time = created_at;
                                         conversation.created_by = user.id;
+                                        conversation.last_id_update = user.id;
                                         conversation.name = name
                                         var members = [];
                                         members.push(user.id);
@@ -169,6 +170,7 @@ io.on('connection', function(socket) {
                                         conversation.created_at = created_at;
                                         conversation.last_action_time = created_at;
                                         conversation.created_by = user.id;
+                                        conversation.last_id_update = user.id;
                                         conversation.name = name
                                         var members = [];
                                         members.push(user.id);
@@ -229,6 +231,8 @@ io.on('connection', function(socket) {
                 });
                 var messageToMe = message;
                 messageToMe.status = 1;
+                // UPDATE CONVERSATION
+                client.query("UPDATE `conversations` SET `last_message`='"+message.content+"', `last_action_time`="+currentTime+", `last_id_update`="+message.sender_id);
                 socket.emit('new_message', messageToMe);
                 //console.log(message);
             });
