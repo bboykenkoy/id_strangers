@@ -78,7 +78,7 @@ io.on('connection', function(socket) {
                 if (statusMessage) {
                     var sql = "UPDATE `message_status` SET `status`=3 WHERE `conversations_id`="+chat.conversations_id+" AND `users_id`="+chat.id+"";
                     client.query(sql);
-                    var sqlSend = "SELECT * FROM `informations` WHERE `users_id` IN (SELECT `conversations_id` FROM `message_status` WHERE `conversations_id`="+chat.conversations_id+")";
+                    var sqlSend = "SELECT * FROM `informations` WHERE `users_id` IN (SELECT `users_id` FROM `message_status` WHERE `conversations_id`="+chat.conversations_id+") AND `users_id`!="+chat.id;
                     console.log(sqlSend);
                     APP.getObjectWithSQL(sqlSend, function(receiver) {
                         if (receiver) {
