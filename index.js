@@ -154,17 +154,15 @@ io.on('connection', function(socket) {
                                                 if (i == members.length - 1) {
                                                     conversation.members = membersData;
                                                     // SEND TO USER
-                                                    setTimeout(function() {
-                                                        socket.emit('searchings', conversation);
-                                                        async.forEachOf(members, function(id_send, j, call) {
-                                                            var sqlSend = "SELECT * FROM `informations` WHERE `users_id`=" + id_send;
-                                                            APP.getObjectWithSQL(sqlSend, function(receiver) {
-                                                                if (receiver) {
-                                                                    socket.broadcast.to(receiver[0].socket_id).emit('searchings', conversation);
-                                                                }
-                                                            });
+                                                    socket.emit('searchings', conversation);
+                                                    async.forEachOf(members, function(id_send, j, call) {
+                                                        var sqlSend = "SELECT * FROM `informations` WHERE `users_id`="+id_send;
+                                                        APP.getObjectWithSQL(sqlSend, function(receiver) {
+                                                            if (receiver) {
+                                                                socket.broadcast.to(receiver[0].socket_id).emit('searchings', conversation);
+                                                            }
                                                         });
-                                                    }, 3500);
+                                                    });
                                                     // END SEND
                                                 }
                                             });
@@ -177,7 +175,7 @@ io.on('connection', function(socket) {
                             setTimeout(function() {
                                 client.query("DELETE FROM `searchings` WHERE `users_id`=" + user.id);
                                 socket.emit('searchings', 0);
-                            }, 3500);
+                            }, 4000);
                         }
                     });
                 } else {
@@ -219,17 +217,15 @@ io.on('connection', function(socket) {
                                                 if (i == members.length - 1) {
                                                     conversation.members = membersData;
                                                     // SEND TO USER
-                                                    setTimeout(function() {
-                                                        socket.emit('searchings', conversation);
-                                                        async.forEachOf(members, function(id_send, j, call) {
-                                                            var sqlSend = "SELECT * FROM `informations` WHERE `users_id`=" + id_send;
-                                                            APP.getObjectWithSQL(sqlSend, function(receiver) {
-                                                                if (receiver) {
-                                                                    socket.broadcast.to(receiver[0].socket_id).emit('searchings', conversation);
-                                                                }
-                                                            });
+                                                    socket.emit('searchings', conversation);
+                                                    async.forEachOf(members, function(id_send, j, call) {
+                                                        var sqlSend = "SELECT * FROM `informations` WHERE `users_id`="+id_send;
+                                                        APP.getObjectWithSQL(sqlSend, function(receiver) {
+                                                            if (receiver) {
+                                                                socket.broadcast.to(receiver[0].socket_id).emit('searchings', conversation);
+                                                            }
                                                         });
-                                                    }, 3500);
+                                                    });
                                                     // END SEND
                                                 }
                                             });
@@ -242,7 +238,7 @@ io.on('connection', function(socket) {
                             setTimeout(function() {
                                 client.query("DELETE FROM `searchings` WHERE `users_id`=" + user.id);
                                 socket.emit('searchings', 0);
-                            }, 3500);
+                            }, 4000);
                         }
                     });
                 }
