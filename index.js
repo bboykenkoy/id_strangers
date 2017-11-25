@@ -154,6 +154,7 @@ io.on('connection', function(socket) {
                                                 if (i == members.length - 1) {
                                                     conversation.members = membersData;
                                                     // SEND TO USER
+                                                    socket.emit('searchings', conversation);
                                                     async.forEachOf(members, function(id_send, j, call) {
                                                         var sqlSend = "SELECT * FROM `informations` WHERE `users_id`="+id_send;
                                                         APP.getObjectWithSQL(sqlSend, function(receiver) {
@@ -216,6 +217,7 @@ io.on('connection', function(socket) {
                                                 if (i == members.length - 1) {
                                                     conversation.members = membersData;
                                                     // SEND TO USER
+                                                    socket.emit('searchings', conversation);
                                                     async.forEachOf(members, function(id_send, j, call) {
                                                         var sqlSend = "SELECT * FROM `informations` WHERE `users_id`="+id_send;
                                                         APP.getObjectWithSQL(sqlSend, function(receiver) {
