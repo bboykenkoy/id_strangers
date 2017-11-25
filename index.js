@@ -140,18 +140,23 @@ io.on('connection', function(socket) {
                                         conversation.last_action_time = created_at;
                                         conversation.created_by = user.id;
                                         conversation.last_id_update = user.id;
-                                        conversation.name = name
+                                        conversation.name = name;
+                                        conversation.is_read = 1;
                                         var members = [];
+                                        var membersData = [];
                                         members.push(user.id);
                                         members.push(data[0].users_id);
-                                        conversation.members = members;
                                         async.forEachOf(members, function(ele, i, call) {
                                             client.query("INSERT INTO `members` SET `users_id`=" + ele + ", `conversations_id`=" + stt.id);
                                             client.query("DELETE FROM `searchings` WHERE `users_id`=" + ele);
-                                            if (i == members.length - 1) {
-                                                // SEND TO USER
-                                                socket.emit('searchings', conversation);
-                                            }
+                                            APP.getObjectWithSQL("SELECT " + APP.informationUser() + " FROM `users` WHERE `id`=" + ele, function(memberInConversation) {
+                                                membersData.push(memberInConversation[0]);
+                                                if (i == members.length - 1) {
+                                                    conversation.members = membersData;
+                                                    // SEND TO USER
+                                                    socket.emit('searchings', conversation);
+                                                }
+                                            });
                                         });
                                     }
                                 });
@@ -161,7 +166,7 @@ io.on('connection', function(socket) {
                             setTimeout(function() {
                                 client.query("DELETE FROM `searchings` WHERE `users_id`=" + user.id);
                                 socket.emit('searchings', 0);
-                            }, 3000);
+                            }, 4000);
                         }
                     });
                 } else {
@@ -189,18 +194,23 @@ io.on('connection', function(socket) {
                                         conversation.last_action_time = created_at;
                                         conversation.created_by = user.id;
                                         conversation.last_id_update = user.id;
-                                        conversation.name = name
+                                        conversation.name = name;
+                                        conversation.is_read = 1;
                                         var members = [];
+                                        var membersData = [];
                                         members.push(user.id);
                                         members.push(data[0].users_id);
-                                        conversation.members = members;
                                         async.forEachOf(members, function(ele, i, call) {
                                             client.query("INSERT INTO `members` SET `users_id`=" + ele + ", `conversations_id`=" + stt.id);
                                             client.query("DELETE FROM `searchings` WHERE `users_id`=" + ele);
-                                            if (i == members.length - 1) {
-                                                // SEND TO USER
-                                                socket.emit('searchings', conversation);
-                                            }
+                                            APP.getObjectWithSQL("SELECT " + APP.informationUser() + " FROM `users` WHERE `id`=" + ele, function(memberInConversation) {
+                                                membersData.push(memberInConversation[0]);
+                                                if (i == members.length - 1) {
+                                                    conversation.members = membersData;
+                                                    // SEND TO USER
+                                                    socket.emit('searchings', conversation);
+                                                }
+                                            });
                                         });
                                     }
                                 });
@@ -210,7 +220,7 @@ io.on('connection', function(socket) {
                             setTimeout(function() {
                                 client.query("DELETE FROM `searchings` WHERE `users_id`=" + user.id);
                                 socket.emit('searchings', 0);
-                            }, 3000);
+                            }, 4000);
                         }
                     });
                 }
