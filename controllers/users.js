@@ -256,17 +256,26 @@ router.get('/:id/type=conversations', parser, function(req, res) {
     APP.authenticateWithToken(id, access_token, function(auth) {
         if (auth) {
             var userSQL = "SELECT * FROM conversations INNER JOIN (SELECT `users_id`,`conversations_id` FROM members) as members ON members.conversations_id = conversations.id AND members.users_id = " + id + " ORDER BY `last_action_time` DESC LIMIT " + parseInt(per_page, 10) + " OFFSET " + parseInt(page, 10) * parseInt(per_page, 10) + "";
-            APP.getObjectWithSQL(userSQL, function(data){
+            APP.getObjectWithSQL(userSQL, function(data) {
                 if (data) {
-                    async.forEachOf(data, function(element, i, callback){
-                        var sql = "SELECT "+APP.informationUser()+" FROM `users` WHERE `id` IN (SELECT `users_id` FROM `members` WHERE `conversations_id`=" + element.id + ")";
-                        APP.getObjectWithSQL(sql, function(member){
-                            data[i].members = member;
-                            if (i == data.length-1) {
-                                return res.send(echo(200, data));
-                            }
+                    async.forEachOf(data, function(element, i, callback) {
+                        var checkRead = "SELECT * FROM `message_status` WHERE (`status`=1 OR `status`=2) AND `users_id`=" + id + " AND `conversations_id`=" + element.id;
+                        var sql = "SELECT " + APP.informationUser() + " FROM `users` WHERE `id` IN (SELECT `users_id` FROM `members` WHERE `conversations_id`=" + element.id + ")";
+                        APP.getObjectWithSQL(checkRead, function(readed) {
+                            APP.getObjectWithSQL(sql, function(member) {
+                                if (readed) {
+                                    data[i].is_read = 0;
+                                } else {
+                                    data[i].is_read = 1;
+                                }
+                                data[i].members = member;
+                                if (i == data.length - 1) {
+                                    return res.send(echo(200, data));
+                                }
+                            });
                         });
                     });
+
                 } else {
                     return res.send(echo(404, "No have any conversation."));
                 }
