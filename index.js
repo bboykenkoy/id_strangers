@@ -133,7 +133,7 @@ io.on('connection', function(socket) {
                                 }
                                 APP.insertWithSQL("INSERT INTO `conversations` SET `name`='" + name + "', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
                                     if (stt) {
-                                        conversation.conversations_id = stt.id;
+                                        conversation.id = stt.id;
                                         conversation.last_message = "Created";
                                         conversation.is_new = 1;
                                         conversation.created_at = created_at;
@@ -196,7 +196,7 @@ io.on('connection', function(socket) {
                                 }
                                 APP.insertWithSQL("INSERT INTO `conversations` SET `name`='" + name + "', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
                                     if (stt) {
-                                        conversation.conversations_id = stt.id;
+                                        conversation.id = stt.id;
                                         conversation.last_message = "Created";
                                         conversation.is_new = 1;
                                         conversation.created_at = created_at;
