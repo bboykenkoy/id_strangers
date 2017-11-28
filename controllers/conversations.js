@@ -50,6 +50,26 @@ router.get('/:conversations_id/type=messages', parser, function(req, res) {
     });
 });
 
+router.post('/:conversations_id/type=out', parser, function(req, res) {
+    var access_token = req.body.access_token || req.query.access_token || req.headers['x-access-token'] || req.params.access_token;
+    var id = req.body.id || req.query.id || req.params.id;
+    var conversations_id = req.body.conversations_id || req.query.conversations_id || req.params.conversations_id;
+    
+    APP.authenticateWithToken(id, access_token, function(auth) {
+        if (auth) {
+            var clienSQL = "UPDATE `conversations` SET `is_new`=0 WHERE `id`="+conversations_id;
+            APP.updateWithSQL(clienSQL, function(status){
+                if (status) {
+                    return res.send(echo(200, "Signout success."));
+                } else {
+                    return res.send(echo(404, "Conversation exists."));
+                }
+            })
+        } else {
+            return res.send(echo(400, "Authenticate failed."));
+        }
+    });
+});
 
 
 
