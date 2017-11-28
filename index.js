@@ -156,7 +156,7 @@ io.on('connection', function(socket) {
                                                     // SEND TO USER
                                                     socket.emit('searchings', conversation);
                                                     async.forEachOf(members, function(id_send, j, call) {
-                                                        var sqlSend = "SELECT * FROM `informations` WHERE `users_id`="+id_send;
+                                                        var sqlSend = "SELECT * FROM `informations` WHERE `users_id`=" + id_send;
                                                         APP.getObjectWithSQL(sqlSend, function(receiver) {
                                                             if (receiver) {
                                                                 socket.broadcast.to(receiver[0].socket_id).emit('searchings', conversation);
@@ -219,7 +219,7 @@ io.on('connection', function(socket) {
                                                     // SEND TO USER
                                                     socket.emit('searchings', conversation);
                                                     async.forEachOf(members, function(id_send, j, call) {
-                                                        var sqlSend = "SELECT * FROM `informations` WHERE `users_id`="+id_send;
+                                                        var sqlSend = "SELECT * FROM `informations` WHERE `users_id`=" + id_send;
                                                         APP.getObjectWithSQL(sqlSend, function(receiver) {
                                                             if (receiver) {
                                                                 socket.broadcast.to(receiver[0].socket_id).emit('searchings', conversation);
@@ -293,6 +293,26 @@ io.on('connection', function(socket) {
             });
         }
     });
+
+    // --------------------------
+    // SOCKET CHAT OUT
+    // --------------------------
+    socket.on('out', function(message) {
+        if (typeof message == 'object' && message.conversations_id && message.members) {
+            var clienSQL = "UPDATE `conversations` SET `is_new`=0 WHERE `id`="+message.conversations_id;
+            client.query(clienSQL);
+            async.forEachOf(message.members, function(element, i, callback) {
+                APP.getObjectWithSQL("SELECT * FROM `informations` WHERE `users_id`=" + element.id, function(receiver) {
+                    if (receiver) {
+                        socket.broadcast.to(receiver[0].socket_id).emit('out', message);
+                        socket.emit('out', message);
+                    }
+                });
+            });
+        }
+    });
+
+
     // --------------------------
     // STATUS DISCONNECT SOCKET
     // --------------------------
