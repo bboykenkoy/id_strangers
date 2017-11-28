@@ -49,6 +49,25 @@ router.get('/:conversations_id/type=messages', parser, function(req, res) {
         }
     });
 });
+router.get('/:conversations_id/type=friend', parser, function(req, res) {
+    var access_token = req.body.access_token || req.query.access_token || req.headers['x-access-token'] || req.params.access_token;
+    var id = req.body.id || req.query.id || req.params.id;
+    var conversations_id = req.body.conversations_id || req.query.conversations_id || req.params.conversations_id;
+    APP.authenticateWithToken(id, access_token, function(auth) {
+        if (auth) {
+            var sql = "SELECT "+APP.informationUser()+ " FROM `users` WHERE `id`!="+id+" AND `id` IN (SELECT `users_id` FROM `members` WHERE `conversations_id`="+conversations_id+") LIMIT 1";
+            APP.getObjectWithSQL(sql, function(user){
+                if (user) {
+                    return res.send(echo(200, user[0]));
+                } else {
+                    return res.send(echo(404, "No user found"));
+                }
+            });
+        } else {
+            return res.send(echo(400, "Authenticate failed."));
+        }
+    });
+});
 
 router.post('/:conversations_id/type=out', parser, function(req, res) {
     var access_token = req.body.access_token || req.query.access_token || req.headers['x-access-token'] || req.params.access_token;
