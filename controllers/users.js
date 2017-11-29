@@ -287,6 +287,30 @@ router.get('/:id/type=conversations', parser, function(req, res) {
 });
 
 
+router.get('/:id/type=online', parser, function(req, res) {
+    var access_token = req.body.access_token || req.query.access_token || req.headers['x-access-token'] || req.params.access_token;
+    var id = req.body.id || req.query.id || req.params.id;
+    var page = req.body.page || req.query.page || req.params.page;
+    var per_page = req.body.per_page || req.query.per_page || req.params.per_page;
+    APP.authenticateWithToken(id, access_token, function(auth) {
+        if (auth) {
+            var userSQL = "SELECT "+APP.informationUser()+" FROM `users` WHERE `id`!="+id+" ORDER BY `id` DESC LIMIT " + parseInt(per_page, 10) + " OFFSET " + parseInt(page, 10) * parseInt(per_page, 10) + "";
+            APP.getObjectWithSQL(userSQL, function(list){
+                if (list) {
+                    return res.send(echo(200, list));
+                } else {
+                    return res.send(echo(404, "No have any user"));
+                }
+            })
+        } else {
+            return res.send(echo(400, "Authenticate failed."));
+        }
+    });
+});
+
+
+
+
 // APP.authenticateWithToken(id, access_token, function(auth) {
 //     if (auth) {
 
