@@ -298,7 +298,7 @@ router.get('/:id/type=online', parser, function(req, res) {
             APP.getObjectWithSQL(userSQL, function(list){
                 if (list) {
                     async.forEachOf(list, function(element, i, callback){
-                        var sql = "SELECT `city`,`country`,`country_code` FROM `informations` WHERE `id`="+element.id;
+                        var sql = "SELECT `city`,`country`,`country_code` FROM `informations` WHERE `users_id`="+element.id;
                         APP.getObjectWithSQL(sql, function(info){
                             var city;
                             var country;
