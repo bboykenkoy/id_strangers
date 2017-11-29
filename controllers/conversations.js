@@ -55,7 +55,7 @@ router.get('/:conversations_id/type=friend', parser, function(req, res) {
     var conversations_id = req.body.conversations_id || req.query.conversations_id || req.params.conversations_id;
     APP.authenticateWithToken(id, access_token, function(auth) {
         if (auth) {
-            var sql = "SELECT "+APP.informationUser()+ " FROM `users` WHERE `id`!="+id+" AND `id` IN (SELECT `users_id` FROM `members` WHERE `conversations_id`="+conversations_id+") LIMIT 1";
+            var sql = "SELECT * FROM `users` WHERE `id`!="+id+" AND `id` IN (SELECT `users_id` FROM `members` WHERE `conversations_id`="+conversations_id+") LIMIT 1";
             APP.getObjectWithSQL(sql, function(user){
                 if (user) {
                     return res.send(echo(200, user[0]));

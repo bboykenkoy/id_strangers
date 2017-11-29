@@ -160,7 +160,7 @@ router.get('/:id/type=info', parser, function(req, res) {
     var friend_id = req.body.conversations_id || req.query.conversations_id || req.params.conversations_id;
     APP.authenticateWithToken(id, access_token, function(auth) {
         if (auth) {
-            var sql = "SELECT "+APP.informationUser()+ " FROM `users` WHERE `id`!="+friend_id+"";
+            var sql = "SELECT * FROM `users` WHERE `id`!="+friend_id+"";
             APP.getObjectWithSQL(sql, function(user){
                 if (user) {
                     return res.send(echo(200, user[0]));
