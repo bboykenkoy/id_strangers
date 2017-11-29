@@ -118,7 +118,42 @@ io.on('connection', function(socket) {
             APP.getObjectWithSQL("SELECT * FROM `searchings` WHERE `users_id`=" + user.id, function(object) {
                 if (object) {
                     // GET USER RETURN CONVERSATIONS
-                    APP.getObjectWithSQL("SELECT * FROM `searchings` WHERE `users_id`!=" + user.id + " LIMIT 1", function(data) {
+                    var sqlFilter;
+                    if (user.min_age && user.max_age && user.min_distance && user.max_distance && user.gender && user.latitude && user.longitude) {
+                        var sqlLocation = "SELECT *,ROUND(111.045* DEGREES(ACOS(COS(RADIANS(your_latitude)) * COS(RADIANS(latitude)) * COS(RADIANS(your_longitude) - RADIANS(longitude)) + SIN(RADIANS(your_latitude)) * SIN(RADIANS(latitude)))),2) AS distance FROM users JOIN (SELECT " + parseFloat(user.latitude) + " AS your_latitude, " + parseFloat(user.longitude) + " AS your_longitude ) AS p ON 1=1 WHERE ROUND(111.045* DEGREES(ACOS(COS(RADIANS(your_latitude)) * COS(RADIANS(latitude)) * COS(RADIANS(your_longitude) - RADIANS(longitude)) + SIN(RADIANS(your_latitude)) * SIN(RADIANS(latitude)))),2) > " + parseInt(user.min_distance) + " AND ROUND(111.045* DEGREES(ACOS(COS(RADIANS(your_latitude)) * COS(RADIANS(latitude)) * COS(RADIANS(your_longitude) - RADIANS(longitude)) + SIN(RADIANS(your_latitude)) * SIN(RADIANS(latitude)))),2) < " + parseInt(user.max_distance) + " AND `id`!="+user.id+" ORDER BY RAND()";
+                        APP.getObjectWithSQL(sqlLocation, function(list_users) {
+                            if (list_users) {
+                                var arrayUser = [];
+                                async.forEachOf(list_users, function(ele, j, call) {
+                                    var birthyear;
+                                    var birthday = new Date(ele.birthday);
+                                    birthyear = birthday.getFullYear();
+                                    var now = (new Date()).getFullYear();
+                                    var age = now-birthyear;
+                                    if (!isNaN(birthyear)) {
+                                        if (age >= user.min_age && age <= user.max_age) {
+                                            arrayUser.push(ele);
+                                        }
+                                    }
+                                    if (j == list_users.length-1) {
+                                        if (arrayUser.length > 0) {
+                                            var random = getRandomInt(0, arrayUser.length);
+                                        }
+                                    }
+                                });
+                            } else {
+                                // SEND TO USER
+                                setTimeout(function() {
+                                    client.query("DELETE FROM `searchings` WHERE `users_id`=" + user.id);
+                                    socket.emit('searchings', 0);
+                                }, 4000);
+                            }
+                        });
+                        sqlFilter = "SELECT * FROM `searchings` WHERE `users_id`!=" + user.id + " AND ";
+                    } else {
+                        sqlFilter = "SELECT * FROM `searchings` WHERE `users_id`!=" + user.id + " LIMIT 1";
+                    }
+                    APP.getObjectWithSQL(sqlFilter, function(data) {
                         if (data) {
                             // CREATE CONVERSATION
                             var created_at = new Date().getTime();
@@ -299,7 +334,7 @@ io.on('connection', function(socket) {
     // --------------------------
     socket.on('out', function(message) {
         if (typeof message == 'object' && message.conversations_id && message.members) {
-            var clienSQL = "UPDATE `conversations` SET `is_new`=0 WHERE `id`="+message.conversations_id;
+            var clienSQL = "UPDATE `conversations` SET `is_new`=0 WHERE `id`=" + message.conversations_id;
             client.query(clienSQL);
             async.forEachOf(message.members, function(element, i, callback) {
                 APP.getObjectWithSQL("SELECT * FROM `informations` WHERE `users_id`=" + element.id, function(receiver) {
@@ -349,7 +384,9 @@ io.on('connection', function(socket) {
 
 
 
-
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 
 
