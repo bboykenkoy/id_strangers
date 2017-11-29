@@ -153,6 +153,27 @@ router.post('/signin', parser, function(req, res) {
     });
 });
 
+
+router.get('/:id/type=info', parser, function(req, res) {
+    var access_token = req.body.access_token || req.query.access_token || req.headers['x-access-token'] || req.params.access_token;
+    var id = req.body.id || req.query.id || req.params.id;
+    var friend_id = req.body.conversations_id || req.query.conversations_id || req.params.conversations_id;
+    APP.authenticateWithToken(id, access_token, function(auth) {
+        if (auth) {
+            var sql = "SELECT "+APP.informationUser()+ " FROM `users` WHERE `id`!="+friend_id+"";
+            APP.getObjectWithSQL(sql, function(user){
+                if (user) {
+                    return res.send(echo(200, user[0]));
+                } else {
+                    return res.send(echo(404, "No user found"));
+                }
+            });
+        } else {
+            return res.send(echo(400, "Authenticate failed."));
+        }
+    });
+});
+
 router.post('/update', parser, function(req, res) {
     var access_token = req.body.access_token || req.query.access_token || req.headers['x-access-token'] || req.params.access_token;
     var id = req.body.id || req.query.id || req.params.id;
