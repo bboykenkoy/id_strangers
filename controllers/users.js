@@ -294,10 +294,32 @@ router.get('/:id/type=online', parser, function(req, res) {
     var per_page = req.body.per_page || req.query.per_page || req.params.per_page;
     APP.authenticateWithToken(id, access_token, function(auth) {
         if (auth) {
-            var userSQL = "SELECT "+APP.informationUser()+" FROM `users` WHERE `id`!="+id+" ORDER BY `id` DESC LIMIT " + parseInt(per_page, 10) + " OFFSET " + parseInt(page, 10) * parseInt(per_page, 10) + "";
+            var userSQL = "SELECT * FROM `users` WHERE `id`!="+id+" ORDER BY `id` DESC LIMIT " + parseInt(per_page, 10) + " OFFSET " + parseInt(page, 10) * parseInt(per_page, 10) + "";
             APP.getObjectWithSQL(userSQL, function(list){
                 if (list) {
-                    return res.send(echo(200, list));
+                    async.forEachOf(list, function(element, i, callback){
+                        var sql = "SELECT `city`,`country`,`country_code` FROM `informations` WHERE `id`="+element.id;
+                        APP.getObjectWithSQL(sql, function(info){
+                            var city;
+                            var country;
+                            var country_code;
+                            if (info) {
+                                city = info[0].city;
+                                country = info[0].country;
+                                country_code = info[0].country_code;
+                            } else {
+                                city = "Unknown";
+                                country = "Unknown";
+                                country_code = "Unknown";
+                            }
+                            list[i].city = city;
+                            list[i].country = country;
+                            list[i].country_code = country_code;
+                            if (i == list.length-1) {
+                                return res.send(echo(200, list));
+                            }
+                        });
+                    });
                 } else {
                     return res.send(echo(404, "No have any user"));
                 }
