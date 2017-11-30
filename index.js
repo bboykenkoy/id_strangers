@@ -233,7 +233,7 @@ io.on('connection', function(socket) {
                                     var members = [];
                                     var membersData = [];
                                     members.push(user.id);
-                                    members.push(data[0].id);
+                                    members.push(data[0].users_id);
                                     async.forEachOf(members, function(ele, i, call) {
                                         client.query("INSERT INTO `members` SET `users_id`=" + ele + ", `conversations_id`=" + stt.id);
                                         client.query("DELETE FROM `searchings` WHERE `users_id`=" + ele);
