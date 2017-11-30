@@ -261,6 +261,7 @@ router.post('/update', parser, function(req, res) {
             APP.getObjectWithSQL("SELECT * FROM `users` WHERE `id`=" + id, function(user) {
                 if (user) {
                     var sql = escapeSQL.format("UPDATE `users` SET ? WHERE `id` = ?", [req.body, id]);
+                    console.log(sql);
                     APP.updateWithSQL(sql, function(status) {
                         if (status) {
                             if (APP.size(informations) > 0) {
