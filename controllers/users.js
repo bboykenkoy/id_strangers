@@ -159,7 +159,7 @@ router.post('/signout', parser, function(req, res) {
     var access_token = req.body.access_token;
     APP.authenticateWithToken(id, access_token, function(auth) {
         if (auth) {
-            var sql = "DELETE * FROM `tokens` WHERE `users_id`="+id;
+            var sql = "DELETE FROM `tokens` WHERE `users_id`="+id;
             APP.deleteWithSQL(sql, function(status){
                 if (status) {
                     return res.send(echo(200, "Signout success."));
