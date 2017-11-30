@@ -115,169 +115,158 @@ io.on('connection', function(socket) {
         console.log(user);
         // client emit len {id: "1"}
         if (user.id) {
-            APP.getObjectWithSQL("SELECT * FROM `searchings` WHERE `users_id`=" + user.id, function(object) {
-                if (object) {
-                    // GET USER RETURN CONVERSATIONS
-                    var sqlFilter;
-                    if (user.min_age && user.max_age && user.min_distance && user.max_distance && user.gender && user.latitude && user.longitude) {
-                        var sqlLocation = "SELECT *,ROUND(111.045* DEGREES(ACOS(COS(RADIANS(your_latitude)) * COS(RADIANS(latitude)) * COS(RADIANS(your_longitude) - RADIANS(longitude)) + SIN(RADIANS(your_latitude)) * SIN(RADIANS(latitude)))),2) AS distance FROM users JOIN (SELECT " + parseFloat(user.latitude) + " AS your_latitude, " + parseFloat(user.longitude) + " AS your_longitude ) AS p ON 1=1 WHERE ROUND(111.045* DEGREES(ACOS(COS(RADIANS(your_latitude)) * COS(RADIANS(latitude)) * COS(RADIANS(your_longitude) - RADIANS(longitude)) + SIN(RADIANS(your_latitude)) * SIN(RADIANS(latitude)))),2) > " + parseInt(user.min_distance) + " AND ROUND(111.045* DEGREES(ACOS(COS(RADIANS(your_latitude)) * COS(RADIANS(latitude)) * COS(RADIANS(your_longitude) - RADIANS(longitude)) + SIN(RADIANS(your_latitude)) * SIN(RADIANS(latitude)))),2) < " + parseInt(user.max_distance) + " AND `id`!="+user.id+" ORDER BY RAND()";
-                        APP.getObjectWithSQL(sqlLocation, function(list_users) {
-                            if (list_users) {
-                                var arrayUser = [];
-                                async.forEachOf(list_users, function(ele, j, call) {
-                                    var birthyear;
-                                    var birthday = new Date(ele.birthday);
-                                    birthyear = birthday.getFullYear();
-                                    var now = (new Date()).getFullYear();
-                                    var age = now-birthyear;
-                                    if (!isNaN(birthyear)) {
-                                        if (age >= user.min_age && age <= user.max_age) {
-                                            arrayUser.push(ele);
+            // GET USER RETURN CONVERSATIONS
+            client.query("DELETE FROM `searchings` WHERE `users_id`=" + user.id);
+            client.query("INSERT INTO `searchings` SET `users_id`=" + user.id);
+            if (user.min_age && user.max_age && user.min_distance && user.max_distance && user.gender && user.latitude && user.longitude) {
+                var sqlLocation = "SELECT *,ROUND(111.045* DEGREES(ACOS(COS(RADIANS(your_latitude)) * COS(RADIANS(latitude)) * COS(RADIANS(your_longitude) - RADIANS(longitude)) + SIN(RADIANS(your_latitude)) * SIN(RADIANS(latitude)))),2) AS distance FROM users JOIN (SELECT " + parseFloat(user.latitude) + " AS your_latitude, " + parseFloat(user.longitude) + " AS your_longitude ) AS p ON 1=1 WHERE ROUND(111.045* DEGREES(ACOS(COS(RADIANS(your_latitude)) * COS(RADIANS(latitude)) * COS(RADIANS(your_longitude) - RADIANS(longitude)) + SIN(RADIANS(your_latitude)) * SIN(RADIANS(latitude)))),2) > " + parseInt(user.min_distance) + " AND ROUND(111.045* DEGREES(ACOS(COS(RADIANS(your_latitude)) * COS(RADIANS(latitude)) * COS(RADIANS(your_longitude) - RADIANS(longitude)) + SIN(RADIANS(your_latitude)) * SIN(RADIANS(latitude)))),2) < " + parseInt(user.max_distance) + " AND `id`!=" + user.id + " ORDER BY RAND()";
+                APP.getObjectWithSQL(sqlLocation, function(list_users) {
+                    if (list_users) {
+                        var arrayUser = [];
+                        async.forEachOf(list_users, function(ele, j, call) {
+                            var birthyear;
+                            var birthday = new Date(ele.birthday);
+                            birthyear = birthday.getFullYear();
+                            var now = (new Date()).getFullYear();
+                            var age = now - birthyear;
+                            if (!isNaN(birthyear)) {
+                                if (age >= user.min_age && age <= user.max_age) {
+                                    arrayUser.push(ele);
+                                }
+                            }
+                            if (j == list_users.length - 1) {
+                                if (arrayUser.length > 0) {
+                                    var random = getRandomInt(0, arrayUser.length);
+                                    // CREATE CONVERSATION
+                                    var created_at = new Date().getTime();
+                                    var conversation = {};
+                                    var userSQL = "SELECT * FROM conversations INNER JOIN (SELECT `users_id`,`conversations_id` FROM members) as members ON members.conversations_id = conversations.id AND members.users_id = " + user.id + " ORDER BY `last_action_time`";
+                                    APP.getObjectWithSQL(userSQL, function(conversation_list) {
+                                        var name = "";
+                                        if (conversation_list) {
+                                            name = "Stranger " + conversation_list.length;
+                                        } else {
+                                            name = "Stranger 0";
                                         }
-                                    }
-                                    if (j == list_users.length-1) {
-                                        if (arrayUser.length > 0) {
-                                            var random = getRandomInt(0, arrayUser.length);
-                                        }
-                                    }
-                                });
-                            } else {
-                                // SEND TO USER
-                                setTimeout(function() {
-                                    client.query("DELETE FROM `searchings` WHERE `users_id`=" + user.id);
-                                    socket.emit('searchings', 0);
-                                }, 4000);
+                                        APP.insertWithSQL("INSERT INTO `conversations` SET `name`='" + name + "', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
+                                            if (stt) {
+                                                conversation.id = stt.id;
+                                                conversation.last_message = "Created";
+                                                conversation.is_new = 1;
+                                                conversation.created_at = created_at;
+                                                conversation.last_action_time = created_at;
+                                                conversation.created_by = user.id;
+                                                conversation.last_id_update = user.id;
+                                                conversation.name = name;
+                                                conversation.is_read = 1;
+                                                var members = [];
+                                                var membersData = [];
+                                                members.push(user.id);
+                                                members.push(arrayUser[random].id);
+                                                async.forEachOf(members, function(ele, i, call) {
+                                                    client.query("INSERT INTO `members` SET `users_id`=" + ele + ", `conversations_id`=" + stt.id);
+                                                    client.query("DELETE FROM `searchings` WHERE `users_id`=" + ele);
+                                                    APP.getObjectWithSQL("SELECT " + APP.informationUser() + " FROM `users` WHERE `id`=" + ele, function(memberInConversation) {
+                                                        membersData.push(memberInConversation[0]);
+                                                        if (i == members.length - 1) {
+                                                            conversation.members = membersData;
+                                                            // SEND TO USER
+                                                            socket.emit('searchings', conversation);
+                                                            async.forEachOf(members, function(id_send, j, call) {
+                                                                var sqlSend = "SELECT * FROM `informations` WHERE `users_id`=" + id_send;
+                                                                APP.getObjectWithSQL(sqlSend, function(receiver) {
+                                                                    if (receiver) {
+                                                                        socket.broadcast.to(receiver[0].socket_id).emit('searchings', conversation);
+                                                                    }
+                                                                });
+                                                            });
+                                                            // END SEND
+                                                        }
+                                                    });
+                                                });
+                                            }
+                                        });
+                                    });
+                                } else {
+                                    // SEND TO USER
+                                    setTimeout(function() {
+                                        client.query("DELETE FROM `searchings` WHERE `users_id`=" + user.id);
+                                        socket.emit('searchings', 0);
+                                    }, 4000);
+                                }
                             }
                         });
-                        sqlFilter = "SELECT * FROM `searchings` WHERE `users_id`!=" + user.id + " AND ";
                     } else {
-                        sqlFilter = "SELECT * FROM `searchings` WHERE `users_id`!=" + user.id + " LIMIT 1";
+                        // SEND TO USER
+                        setTimeout(function() {
+                            client.query("DELETE FROM `searchings` WHERE `users_id`=" + user.id);
+                            socket.emit('searchings', 0);
+                        }, 4000);
                     }
-                    APP.getObjectWithSQL(sqlFilter, function(data) {
-                        if (data) {
-                            // CREATE CONVERSATION
-                            var created_at = new Date().getTime();
-                            var conversation = {};
-                            var userSQL = "SELECT * FROM conversations INNER JOIN (SELECT `users_id`,`conversations_id` FROM members) as members ON members.conversations_id = conversations.id AND members.users_id = " + user.id + " ORDER BY `last_action_time`";
-                            APP.getObjectWithSQL(userSQL, function(conversation_list) {
-                                var name = "";
-                                if (conversation_list) {
-                                    name = "Stranger " + conversation_list.length;
-                                } else {
-                                    name = "Stranger 0";
-                                }
-                                APP.insertWithSQL("INSERT INTO `conversations` SET `name`='" + name + "', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
-                                    if (stt) {
-                                        conversation.id = stt.id;
-                                        conversation.last_message = "Created";
-                                        conversation.is_new = 1;
-                                        conversation.created_at = created_at;
-                                        conversation.last_action_time = created_at;
-                                        conversation.created_by = user.id;
-                                        conversation.last_id_update = user.id;
-                                        conversation.name = name;
-                                        conversation.is_read = 1;
-                                        var members = [];
-                                        var membersData = [];
-                                        members.push(user.id);
-                                        members.push(data[0].users_id);
-                                        async.forEachOf(members, function(ele, i, call) {
-                                            client.query("INSERT INTO `members` SET `users_id`=" + ele + ", `conversations_id`=" + stt.id);
-                                            client.query("DELETE FROM `searchings` WHERE `users_id`=" + ele);
-                                            APP.getObjectWithSQL("SELECT " + APP.informationUser() + " FROM `users` WHERE `id`=" + ele, function(memberInConversation) {
-                                                membersData.push(memberInConversation[0]);
-                                                if (i == members.length - 1) {
-                                                    conversation.members = membersData;
-                                                    // SEND TO USER
-                                                    socket.emit('searchings', conversation);
-                                                    async.forEachOf(members, function(id_send, j, call) {
-                                                        var sqlSend = "SELECT * FROM `informations` WHERE `users_id`=" + id_send;
-                                                        APP.getObjectWithSQL(sqlSend, function(receiver) {
-                                                            if (receiver) {
-                                                                socket.broadcast.to(receiver[0].socket_id).emit('searchings', conversation);
-                                                            }
-                                                        });
+                });
+            } else {
+                var sqlFilter = "SELECT * FROM `searchings` WHERE `users_id`!=" + user.id + " ORDER BY RAND() LIMIT 1";
+                APP.getObjectWithSQL(sqlFilter, function(data) {
+                    if (data) {
+                        // CREATE CONVERSATION
+                        var created_at = new Date().getTime();
+                        var conversation = {};
+                        var userSQL = "SELECT * FROM conversations INNER JOIN (SELECT `users_id`,`conversations_id` FROM members) as members ON members.conversations_id = conversations.id AND members.users_id = " + user.id + " ORDER BY `last_action_time`";
+                        APP.getObjectWithSQL(userSQL, function(conversation_list) {
+                            var name = "";
+                            if (conversation_list) {
+                                name = "Stranger " + conversation_list.length;
+                            } else {
+                                name = "Stranger 0";
+                            }
+                            APP.insertWithSQL("INSERT INTO `conversations` SET `name`='" + name + "', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
+                                if (stt) {
+                                    conversation.id = stt.id;
+                                    conversation.last_message = "Created";
+                                    conversation.is_new = 1;
+                                    conversation.created_at = created_at;
+                                    conversation.last_action_time = created_at;
+                                    conversation.created_by = user.id;
+                                    conversation.last_id_update = user.id;
+                                    conversation.name = name;
+                                    conversation.is_read = 1;
+                                    var members = [];
+                                    var membersData = [];
+                                    members.push(user.id);
+                                    members.push(data[0].id);
+                                    async.forEachOf(members, function(ele, i, call) {
+                                        client.query("INSERT INTO `members` SET `users_id`=" + ele + ", `conversations_id`=" + stt.id);
+                                        client.query("DELETE FROM `searchings` WHERE `users_id`=" + ele);
+                                        APP.getObjectWithSQL("SELECT " + APP.informationUser() + " FROM `users` WHERE `id`=" + ele, function(memberInConversation) {
+                                            membersData.push(memberInConversation[0]);
+                                            if (i == members.length - 1) {
+                                                conversation.members = membersData;
+                                                // SEND TO USER
+                                                socket.emit('searchings', conversation);
+                                                async.forEachOf(members, function(id_send, j, call) {
+                                                    var sqlSend = "SELECT * FROM `informations` WHERE `users_id`=" + id_send;
+                                                    APP.getObjectWithSQL(sqlSend, function(receiver) {
+                                                        if (receiver) {
+                                                            socket.broadcast.to(receiver[0].socket_id).emit('searchings', conversation);
+                                                        }
                                                     });
-                                                    // END SEND
-                                                }
-                                            });
+                                                });
+                                                // END SEND
+                                            }
                                         });
-                                    }
-                                });
-                            });
-                        } else {
-                            // SEND TO USER
-                            setTimeout(function() {
-                                client.query("DELETE FROM `searchings` WHERE `users_id`=" + user.id);
-                                socket.emit('searchings', 0);
-                            }, 4000);
-                        }
-                    });
-                } else {
-                    client.query("INSERT INTO `searchings` SET `users_id`=" + user.id);
-                    // GET USER RETURN CONVERSATIONS
-                    APP.getObjectWithSQL("SELECT * FROM `searchings` WHERE `users_id`!=" + user.id + " LIMIT 1", function(data) {
-                        if (data) {
-                            // CREATE CONVERSATION
-                            var created_at = new Date().getTime();
-                            var conversation = {};
-                            var userSQL = "SELECT * FROM conversations INNER JOIN (SELECT `users_id`,`conversations_id` FROM members) as members ON members.conversations_id = conversations.id AND members.users_id = " + user.id + " ORDER BY `last_action_time`";
-                            APP.getObjectWithSQL(userSQL, function(conversation_list) {
-                                var name = "";
-                                if (conversation_list) {
-                                    name = "Stranger " + conversation_list.length;
-                                } else {
-                                    name = "Stranger 0";
+                                    });
                                 }
-                                APP.insertWithSQL("INSERT INTO `conversations` SET `name`='" + name + "', `created_at`=" + created_at + ", `last_message`='Created', `last_action_time`=" + created_at + ", `last_id_update`=" + user.id + ", `created_by`=" + user.id, function(stt) {
-                                    if (stt) {
-                                        conversation.id = stt.id;
-                                        conversation.last_message = "Created";
-                                        conversation.is_new = 1;
-                                        conversation.created_at = created_at;
-                                        conversation.last_action_time = created_at;
-                                        conversation.created_by = user.id;
-                                        conversation.last_id_update = user.id;
-                                        conversation.name = name;
-                                        conversation.is_read = 1;
-                                        var members = [];
-                                        var membersData = [];
-                                        members.push(user.id);
-                                        members.push(data[0].users_id);
-                                        async.forEachOf(members, function(ele, i, call) {
-                                            client.query("INSERT INTO `members` SET `users_id`=" + ele + ", `conversations_id`=" + stt.id);
-                                            client.query("DELETE FROM `searchings` WHERE `users_id`=" + ele);
-                                            APP.getObjectWithSQL("SELECT " + APP.informationUser() + " FROM `users` WHERE `id`=" + ele, function(memberInConversation) {
-                                                membersData.push(memberInConversation[0]);
-                                                if (i == members.length - 1) {
-                                                    conversation.members = membersData;
-                                                    // SEND TO USER
-                                                    socket.emit('searchings', conversation);
-                                                    async.forEachOf(members, function(id_send, j, call) {
-                                                        var sqlSend = "SELECT * FROM `informations` WHERE `users_id`=" + id_send;
-                                                        APP.getObjectWithSQL(sqlSend, function(receiver) {
-                                                            if (receiver) {
-                                                                socket.broadcast.to(receiver[0].socket_id).emit('searchings', conversation);
-                                                            }
-                                                        });
-                                                    });
-                                                    // END SEND
-                                                }
-                                            });
-                                        });
-                                    }
-                                });
                             });
-                        } else {
-                            // SEND TO USER
-                            setTimeout(function() {
-                                client.query("DELETE FROM `searchings` WHERE `users_id`=" + user.id);
-                                socket.emit('searchings', 0);
-                            }, 4000);
-                        }
-                    });
-                }
-            });
+                        });
+                    } else {
+                        // SEND TO USER
+                        setTimeout(function() {
+                            client.query("DELETE FROM `searchings` WHERE `users_id`=" + user.id);
+                            socket.emit('searchings', 0);
+                        }, 4000);
+                    }
+                });
+            }
         }
     });
     // --------------------------
