@@ -197,7 +197,7 @@ router.get('/:id/type=info', parser, function(req, res) {
 router.post('/update', parser, function(req, res) {
     var access_token = req.body.access_token || req.query.access_token || req.headers['x-access-token'] || req.params.access_token;
     var id = req.body.id || req.query.id || req.params.id;
-    if (!req.body.id || req.body.coin) {
+    if (!req.body.id) {
         return res.sendStatus(300);
     }
     APP.authenticateWithToken(id, access_token, function(auth) {
