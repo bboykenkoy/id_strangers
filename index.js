@@ -125,6 +125,7 @@ io.on('connection', function(socket) {
                 } else {
                     sqlLocation = "SELECT *,ROUND(111.045* DEGREES(ACOS(COS(RADIANS(your_latitude)) * COS(RADIANS(latitude)) * COS(RADIANS(your_longitude) - RADIANS(longitude)) + SIN(RADIANS(your_latitude)) * SIN(RADIANS(latitude)))),2) AS distance FROM users JOIN (SELECT " + parseFloat(user.latitude) + " AS your_latitude, " + parseFloat(user.longitude) + " AS your_longitude ) AS p ON 1=1 WHERE ROUND(111.045* DEGREES(ACOS(COS(RADIANS(your_latitude)) * COS(RADIANS(latitude)) * COS(RADIANS(your_longitude) - RADIANS(longitude)) + SIN(RADIANS(your_latitude)) * SIN(RADIANS(latitude)))),2) > " + parseInt(user.min_distance) + " AND ROUND(111.045* DEGREES(ACOS(COS(RADIANS(your_latitude)) * COS(RADIANS(latitude)) * COS(RADIANS(your_longitude) - RADIANS(longitude)) + SIN(RADIANS(your_latitude)) * SIN(RADIANS(latitude)))),2) < " + parseInt(user.max_distance) + " AND `id`!=" + user.id + " AND `gender`="+parseInt(user.gender)+" ORDER BY RAND()";
                 }
+                console.log(sqlLocation);
                 APP.getObjectWithSQL(sqlLocation, function(list_users) {
                     if (list_users) {
                         var arrayUser = [];
