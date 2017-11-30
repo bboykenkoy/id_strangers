@@ -205,7 +205,6 @@ io.on('connection', function(socket) {
                     }
                 });
             } else {
-                console.log("Day");
                 var sqlFilter = "SELECT * FROM `searchings` WHERE `users_id`!=" + user.id + " ORDER BY RAND() LIMIT 1";
                 APP.getObjectWithSQL(sqlFilter, function(data) {
                     if (data) {
