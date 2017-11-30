@@ -157,43 +157,18 @@ router.post('/signin', parser, function(req, res) {
 router.post('/signout', parser, function(req, res) {
     var id = req.body.id;
     var access_token = req.body.access_token;
-
-    var sqlUser = "SELECT * FROM `users` WHERE `facebook_id`='" + facebook_id + "'";
-    APP.getObjectWithSQL(sqlUser, function(u) {
-        if (u) {
-            var url = "https://graph.facebook.com/me?access_token=" + facebook_token;
-            request(url, function(error, response, body) {
-                if (response && response.statusCode == 200 && APP.isJsonString(body)) {
-                    var fb = JSON.parse(body);
-                    if (facebook_id == fb.id) {
-                        APP.getObjectWithSQL("SELECT * FROM `users` WHERE `facebook_id`='" + facebook_id + "'", function(user) {
-                            if (user) {
-                                APP.getObjectWithSQL("SELECT * FROM `informations` WHERE `users_id`=" + user[0].id, function(info) {
-                                    APP.createAccessToken(user[0].id, facebook_token, 604800, function(access_token) {
-                                        if (info) {
-                                            delete info[0].users_id;
-                                            user[0].access_token = access_token;
-                                            var full = Object.assign(user[0], info[0]);
-                                            return res.send(echo(200, full));
-                                        } else {
-                                            user[0].access_token = access_token;
-                                            return res.send(echo(user[0], full));
-                                        }
-                                    });
-                                });
-                            } else {
-                                return res.send(echo(404, "This user not exists."));
-                            }
-                        });
-                    } else {
-                        return res.send(echo(400, "Authenticate failed."));
-                    }
+    APP.authenticateWithToken(id, access_token, function(auth) {
+        if (auth) {
+            var sql = "DELETE * FROM `tokens` WHERE `users_id`="+id;
+            APP.deleteWithSQL(sql, function(status){
+                if (status) {
+                    return res.send(echo(200, "Signout success."));
                 } else {
-                    return res.send(echo(400, "Authenticate failed."));
+                    return res.send(echo(404, "Signout failed."));
                 }
             });
         } else {
-            return res.send(echo(404, "This user not exists."));
+            return res.send(echo(400, "Authenticate failed."));
         }
     });
 });

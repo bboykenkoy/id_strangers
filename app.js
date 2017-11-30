@@ -85,6 +85,16 @@ module.exports = class app {
             }
         });
     }
+    deleteWithSQL(sql, callback) {
+        client.query(sql, function(error, data, fields) {
+            if (error) {
+                console.log(error);
+                callback();
+            } else {
+                callback(data);
+            }
+        });
+    }
     getObjectWithSQL(sql, callback) {
         client.query(sql, function(error, data, fields) {
             if (error) {
