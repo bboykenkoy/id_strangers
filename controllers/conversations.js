@@ -31,8 +31,8 @@ router.post('/new', parser, function(req, res) {
             var clienSQL = escapeSQL.format("INSERT INTO `conversations` SET ?", object);
             APP.insertWithSQL(clienSQL, function(conversation) {
                 if (conversation) {
-                    client.query("INSERT INTO `members` SET `users_id`=" + id + " `conversations_id`=" + conversation.id);
-                    client.query("INSERT INTO `members` SET `users_id`=" + friend_id + " `conversations_id`=" + conversation.id);
+                    client.query("INSERT INTO `members` SET `users_id`=" + id + ", `conversations_id`=" + conversation.id);
+                    client.query("INSERT INTO `members` SET `users_id`=" + friend_id + ", `conversations_id`=" + conversation.id);
                     var userSQL = "SELECT * FROM conversations WHERE `id`=" + conversation.id;
                     APP.getObjectWithSQL(userSQL, function(data) {
                         if (data) {
